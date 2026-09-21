@@ -1,8 +1,41 @@
 # 🚀 Guia de Instalação:
-Vite (React) + Tailwind CSS + GSAPEste guia instrui como criar um projeto React moderno do zero utilizando Vite (com JavaScript puro), configurando o Tailwind CSS para estilização e o GSAP (junto com a integração oficial @gsap/react) para animações.🛠️ Tecnologias UtilizadasVite — Build tool ultrarrápidaReact — Biblioteca para construção de interfacesTailwind CSS — Framework CSS utilitárioGSAP — Biblioteca profissional para animações de alta performance📋 Passo a Passo de Instalação🚀 Passo 1: Criar o Projeto com Vite e ReactAbra o terminal na pasta onde deseja salvar o projeto e execute:npm create vite@latest meu-projeto
-Durante a interatividade do CLI:Project name: Digite o nome desejado ou pressione Enter.Select a framework: Selecione React.Select a variant: Escolha JavaScript (não selecione TypeScript nem React Compiler).Em seguida, acesse a pasta e instale as dependências padrão:cd meu-projeto
+Este guia instrui como criar um projeto React moderno do zero utilizando Vite (com JavaScript puro), configurando o Tailwind CSS para estilização e o GSAP (junto com a integração oficial @gsap/react) para animações.
+
+## 🛠️ Tecnologias Utilizadas
+
+Vite — Build tool ultrarrápida
+React — Biblioteca para construção de interfaces
+Tailwind CSS — Framework CSS utilitário
+GSAP — Biblioteca profissional para animações de alta performance
+
+## 📋 Passo a Passo de Instalação
+
+# 🚀 Passo 1: Criar o Projeto com Vite e React
+Abra o terminal na pasta onde deseja salvar o projeto e execute:
+
+**npm create vite@latest meu-projeto**
+
+Durante a interatividade do CLI:
+Project name: Digite o nome desejado ou pressione Enter.
+Select a framework: Selecione React.
+Select a variant: Escolha JavaScript (não selecione TypeScript nem React Compiler).
+Em seguida, acesse a pasta e instale as dependências padrão:
+cd meu-projeto
 npm install
-🎨 Passo 2: Instalar e Configurar o Tailwind CSSInstale o Tailwind CSS e o plugin do Vite no seu ambiente de desenvolvimento:npm install tailwindcss @tailwindcss/vite
-⚡ Passo 3: Instalar o GSAPInstale a biblioteca de animação GSAP junto com o hook oficial para React (@gsap/react):npm install gsap @gsap/react
-▶️ Passo 4: Executar o ProjetoApós concluir a instalação das dependências, inicie o servidor local de desenvolvimento:npm run dev
-Abra o endereço informado no terminal (geralmente http://localhost:5173/) no seu navegador.
+
+# 🎨 Passo 2: Instalar e Configurar o Tailwind CSS
+
+Instale o Tailwind CSS e o plugin do Vite no seu ambiente de desenvolvimento:
+
+**npm install tailwindcss @tailwindcss/vite**
+
+# ⚡ Passo 3: Instalar o GSAP
+Instale a biblioteca de animação GSAP junto com o hook oficial para React (@gsap/react):
+
+**npm install gsap @gsap/react**
+
+▶️ Passo 4: Executar o Projeto
+
+Após concluir a instalação das dependências, inicie o servidor local de desenvolvimento:
+
+npm run dev
