@@ -11,12 +11,14 @@ const Hero = () => {
                 Edcarlos
                 </h1>
                     <div className ="flex flex-row ml-[15px]">
-                        <div className="bg-amber-500 inline-block p-3.5 h-fit p rounded-3xl">
+                        <div className="inline-block p-3.5 h-fit p rounded-3xl
+                        bg-linear-to-r from-dim-bluestrong/25 from-0% to-dim-turk/25 to-100% backdrop-blur-3xl
+                        shadow-inner-lightcard drop-shadow-[3px_4px_5px_rgba(255,255,255,0.15)]">
                             <h1 className = {`${styles.jobtitle} text-dim-white`}>
                                 Analista de Dados
                             </h1>
                         </div>
-                        <h1 className ={`${styles.huggetitle} text-blueton-bg inline-block pr-6 h-fit`}>
+                        <h1 className ={`${styles.huggetitle} text-dim-white/20 inline-block pr-6 h-fit `}>
                         Ramos.
                         </h1>
                     </div>
