@@ -7,10 +7,10 @@ import MeshGradientBackground from './Meshgradientbackground'
 gsap.registerPlugin(ScrambleTextPlugin)
 
 const ROLES = [
-  'Analista de Dados',
+  'Analista de dados',
   'Desenvolvedor Web',
   'Product Manager',
-  'Analista de Dados'
+  'Analista de dados'
 ]
 
 const Hero = () => {
@@ -43,7 +43,8 @@ const Hero = () => {
 
   return (
     <div className="flex w-full justify-center items-center min-h-screen px-2.5 py-2.5 bg-hugeblack-bg">
-      <div className="relative isolate @container flex w-full max-w-[1345px] h-[clamp(700px,calc(14.6cqw+641.6px),838px)] rounded-[clamp(16px,3cqw,32px)] justify-start items-center overflow-hidden py-[6cqw] bg-linear-to-t from-hugeblack-bg from-0% to-blueton-bg to-100% shadow-inner-light">
+      <div className="relative isolate @container flex w-full max-w-[1345px] h-[clamp(700px,calc(14.6cqw+641.6px),838px)] rounded-[clamp(16px,3cqw,32px)] justify-start items-center overflow-hidden py-[6cqw] 
+      bg-linear-to-t from-hugeblack-bg from-0% to-blueton-bg to-100% shadow-inner-light">
         <MeshGradientBackground />
 
         <div className="relative z-10 flex flex-col w-full pl-[1cqw]">

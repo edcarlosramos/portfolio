@@ -57,10 +57,6 @@ const DEFAULT_BLOBS = [
     duration: 6,        
     delay: -2,
   },
-  
-  
-
-
 ]
 
 const MeshGradientBackground = ({ blobs = DEFAULT_BLOBS, className = '' }) => {

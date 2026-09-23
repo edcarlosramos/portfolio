@@ -4,7 +4,7 @@
 @theme {
   
   --color-hugewhite-bg: #D6E7F0;
-  --color-hugeblack-bg: #001222;
+  --color-hugeblack-bg: #000C17;
   --color-blueton-bg: #00417B;
   --color-dim-blue: #C3F2FF;
   --color-dim-white: #FFFFFF;
@@ -12,8 +12,8 @@
   --color-dim-bluestrong: #0070DA;
 
 
-  --shadow-inner-light: inset 0 1.5px 1px rgba(255, 255, 255, 0.25);
-  --shadow-inner-lightcard: inset 0 1.1px 4px rgba(255, 255, 255, 0.35);
+  --shadow-inner-light: inset 0 1px 0.2px rgba(255, 255, 255, 0.35);
+  --shadow-inner-lightcard: inset 0px 1px 0px rgba(255, 255, 255, 0.55);
 
   --font-sans: "Google Sans Flex", sans-serif;
 
