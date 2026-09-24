@@ -52,9 +52,9 @@ const Hero = () => {
             Edcarlos
           </h1>
 
-          <div className="flex flex-col-reverse sm:flex-row items-start sm:items-center ml-0 sm:ml-[clamp(6px,1.5cqw,15px)] gap-[clamp(10px,2.5cqw,12px)] sm:gap-0 mt-[2cqw] sm:mt-3">
+          <div className="flex flex-col-reverse sm:flex-row items-start sm:items-center ml- sm:ml-[clamp(6px,1.5cqw,15px)] gap-[clamp(10px,2.5cqw,12px)] sm:gap-0 mt-[2cqw] sm:mt-3">
             
-            <div className="w-[clamp(220px,28cqw,440px)] h-fit flex justify-start items-center self-start">
+            <div className="w-[clamp(230px,28cqw,440px)] shrink-0 h-fit flex justify-start items-center self-start">
               
               
               <div className="inline-flex items-center h-fit rounded-[clamp(14px,3cqw,24px)] p-[clamp(10px,2.2cqw,14px)] bg-linear-to-r from-dim-bluestrong/25 from-0% to-dim-turk/25 to-100% backdrop-blur-3xl shadow-inner-lightcard drop-shadow-[3px_4px_5px_rgba(255,255,255,0.15)] transition-all duration-300">
@@ -67,10 +67,11 @@ const Hero = () => {
               </div>
 
             </div>
-
-            <h1 className="font-sans font-semibold tracking-[-0.02em] leading-[0.75] text-dim-white/15 text-[clamp(32px,22.3cqw,300px)] pr-[3cqw] h-fit whitespace-nowrap drop-shadow-[3px_4px_10px_rgba(255,255,255,0.35)]">
-              Ramos
+            <div className ="opacity-18">            
+              <h1 className="[text-shadow:1px_1px_0_rgba(255,255,255,1)] font-sans font-semibold tracking-[-0.02em] leading-[0.75] text-fake-transparent/95 text-[clamp(32px,22.3cqw,300px)] pr-[3cqw] h-fit whitespace-nowrap drop-shadow-[3px_4px_8px_rgba(255,255,255,0.14)] ">
+              Ramos.
             </h1>
+            </div>
           </div>
         </div>
       </div>
