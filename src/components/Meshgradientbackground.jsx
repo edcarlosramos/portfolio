@@ -110,7 +110,7 @@ const MeshGradientBackground = ({ blobs = DEFAULT_BLOBS, className = '' }) => {
 
         return (
           <div
-            key={blob.id || i}
+            key={`${blob.id}-${i}`}
             ref={(el) => (blobRefs.current[i] = el)}
             className="absolute rounded-full will-change-transform"
             style={{

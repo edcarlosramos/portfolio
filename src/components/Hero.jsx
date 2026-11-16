@@ -42,7 +42,15 @@ const Hero = () => {
   }, [])
 
   return (
-    <div className="flex w-full justify-center items-center min-h-screen px-2.5 py-2.5 bg-hugeblack-bg">
+    <div id="home" data-nav-theme="dark" className="relative isolate flex w-full justify-center items-center min-h-screen px-2.5 py-2.5">
+      {/* Fundo escuro do hero numa peça só: sólido no topo e nas laterais, com
+          a base arredondada (elíptica) que transborda para a seção seguinte e
+          se dissolve no fundo claro, sem quebras na transição. */}
+      <div
+        aria-hidden="true"
+        className="bg-abyss-ellipse pointer-events-none absolute inset-x-0 top-0 -z-10 h-[135%]"
+      />
+
       <div className="relative isolate @container flex w-full max-w-[1345px] h-[clamp(700px,calc(14.6cqw+641.6px),838px)] rounded-[clamp(16px,3cqw,32px)] justify-start items-center overflow-hidden py-[6cqw] 
       bg-linear-to-t from-hugeblack-bg from-0% to-blueton-bg to-100% shadow-inner-light">
         <MeshGradientBackground />

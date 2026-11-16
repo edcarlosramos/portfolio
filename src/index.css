@@ -11,6 +11,12 @@
   --color-dim-turk: #83E6FF;
   --color-dim-bluestrong: #0070DA;
   --color-fake-transparent: #4683B9;
+  --color-dim-navy: #021F40;
+  --color-dim-sky: #4C9BE4;
+  --color-dim-mist: #E5EBF1;
+
+  --shadow-nav-pill: inset 0 0 0 0.5px rgba(255, 255, 255, 0.25), inset 0px 1px 0px rgba(255, 255, 255, 0.35);
+  --shadow-card: 0 10px 30px -12px rgba(2, 31, 64, 0.25);
 
 
   --shadow-inner-light: inset 0 1px 0.2px rgba(255, 255, 255, 0.35);
@@ -27,7 +33,32 @@
 }
 
 
+/* Fundo escuro do hero: elipse ancorada no topo, mais larga que a tela, que
+   mantém topo e laterais sólidos e arredonda a base até o fundo claro. */
+@utility bg-abyss-ellipse {
+  background: radial-gradient(
+    130% 100% at 50% 0%,
+    var(--color-hugeblack-bg) 0%,
+    var(--color-hugeblack-bg) 72%,
+    color-mix(in srgb, var(--color-dim-navy) 85%, transparent) 82%,
+    color-mix(in srgb, var(--color-blueton-bg) 45%, transparent) 92%,
+    transparent 100%
+  );
+}
+
+@utility no-scrollbar {
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
 @layer base {
+  html {
+    background-color: var(--color-hugeblack-bg);
+  }
+
   button,
   input,
   select,
