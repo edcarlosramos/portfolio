@@ -3,7 +3,7 @@ import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { ScrollSmoother } from 'gsap/ScrollSmoother'
 import styles from '../styles'
-import { navLinks } from '../constants'
+import { MOTION_OK, navLinks } from '../constants'
 import { scrollToSection } from '../utils/scroll'
 
 gsap.registerPlugin(ScrollTrigger)
@@ -74,9 +74,115 @@ const useNavTheme = (navRef) => {
   return theme
 }
 
+// Enquanto a página rola, as pílulas recolhem para a direita dentro de um
+// ícone; quando a rolagem (suavizada) para, elas voltam. Usa o `onUpdate` de
+// um ScrollTrigger, que acompanha a posição suavizada do ScrollSmoother.
+const IDLE_DELAY = 0.35
+
+const useCollapseOnScroll = (listRef, iconRef) => {
+  useEffect(() => {
+    const mm = gsap.matchMedia()
+
+    mm.add(MOTION_OK, () => {
+      const list = listRef.current
+      const icon = iconRef.current
+      const items = gsap.utils.toArray(list.children)
+      let collapsed = false
+
+      gsap.set(icon, { autoAlpha: 0, scale: 0.5, rotate: -90 })
+      gsap.set(list, { clipPath: 'inset(0px 0px 0px 0px round 12px)' })
+
+      const collapse = () => {
+        if (collapsed) return
+        collapsed = true
+        const width = list.offsetWidth
+        const height = list.offsetHeight
+        const target = width - height / 2
+
+        gsap.to(list, {
+          clipPath: `inset(0px 0px 0px ${width - height}px round 12px)`,
+          duration: 0.5,
+          ease: 'power3.inOut',
+          overwrite: 'auto',
+        })
+        gsap.to(items, {
+          x: (_, el) => target - (el.offsetLeft + el.offsetWidth / 2),
+          scale: 0.3,
+          autoAlpha: 0,
+          duration: 0.4,
+          ease: 'power2.in',
+          stagger: { each: 0.04, from: 'end' },
+          overwrite: 'auto',
+        })
+        gsap.to(icon, {
+          autoAlpha: 1,
+          scale: 1,
+          rotate: 0,
+          duration: 0.35,
+          delay: 0.25,
+          ease: 'back.out(2)',
+          overwrite: 'auto',
+        })
+      }
+
+      const expand = () => {
+        if (!collapsed) return
+        collapsed = false
+
+        gsap.to(icon, {
+          autoAlpha: 0,
+          scale: 0.5,
+          rotate: -90,
+          duration: 0.25,
+          ease: 'power2.in',
+          overwrite: 'auto',
+        })
+        gsap.to(list, {
+          clipPath: 'inset(0px 0px 0px 0px round 12px)',
+          duration: 0.55,
+          delay: 0.1,
+          ease: 'power3.out',
+          overwrite: 'auto',
+        })
+        gsap.to(items, {
+          x: 0,
+          scale: 1,
+          autoAlpha: 1,
+          duration: 0.5,
+          delay: 0.1,
+          ease: 'power3.out',
+          stagger: { each: 0.04, from: 'end' },
+          overwrite: 'auto',
+        })
+      }
+
+      const idle = gsap.delayedCall(IDLE_DELAY, expand).pause()
+
+      ScrollTrigger.create({
+        start: 0,
+        end: 'max',
+        onUpdate: () => {
+          collapse()
+          idle.restart(true)
+        },
+      })
+
+      return () => {
+        idle.kill()
+        gsap.set([list, ...items, icon], { clearProps: 'all' })
+      }
+    })
+
+    return () => mm.revert()
+  }, [listRef, iconRef])
+}
+
 const Navbar = () => {
   const navRef = useRef(null)
+  const listRef = useRef(null)
+  const iconRef = useRef(null)
   const theme = THEMES[useNavTheme(navRef)]
+  useCollapseOnScroll(listRef, iconRef)
 
   const handleClick = (event, id) => {
     event.preventDefault()
@@ -89,19 +195,33 @@ const Navbar = () => {
       aria-label="Navegação principal"
       className="fixed z-50 top-[clamp(10px,1.4vw,20px)] right-[clamp(10px,2vw,36px)]"
     >
-      <ul className={`flex items-center gap-[clamp(6px,1.1vw,15px)] rounded-[10px] p-[5px] transition-colors duration-500 ${theme.list}`}>
+      <ul
+        ref={listRef}
+        className={`relative flex items-center gap-[clamp(6px,1.1vw,15px)] rounded-[12px] p-[6px] transition-colors duration-500 ${theme.list}`}
+      >
         {navLinks.map((link) => (
           <li key={link.id}>
             <a
               href={`#${link.id}`}
               onClick={(event) => handleClick(event, link.id)}
-              className={`${styles.focusRing} inline-flex items-center rounded-[8px] px-[10px] py-[5px] font-sans font-semibold tracking-[-0.02em] leading-[22px] text-dim-white text-[clamp(12px,1.05vw,15px)] whitespace-nowrap shadow-nav-pill transition-colors duration-500 ${theme.pill}`}
+              className={`${styles.focusRing} inline-flex items-center rounded-[9px] px-[13px] py-[7px] font-sans font-semibold tracking-[-0.02em] leading-[24px] text-dim-white text-[clamp(14px,1.35vw,18px)] whitespace-nowrap shadow-nav-pill transition-colors duration-500 ${theme.pill}`}
             >
               {link.title}
             </a>
           </li>
         ))}
       </ul>
+
+      {/* Ícone que aparece com as pílulas recolhidas (só visual). */}
+      <span
+        ref={iconRef}
+        aria-hidden="true"
+        className={`pointer-events-none invisible absolute inset-y-[6px] right-[6px] flex aspect-square flex-col items-center justify-center gap-[4px] rounded-[9px] shadow-nav-pill transition-colors duration-500 ${theme.pill}`}
+      >
+        <span className="h-[2px] w-[16px] rounded-full bg-dim-white" />
+        <span className="h-[2px] w-[16px] rounded-full bg-dim-white" />
+        <span className="h-[2px] w-[16px] rounded-full bg-dim-white" />
+      </span>
     </nav>
   )
 }

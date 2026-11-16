@@ -1,5 +1,6 @@
 import React from 'react'
 import styles from '../styles'
+import SpinText from './SpinText'
 
 // Título da seção à esquerda e, opcionalmente, um link de ação à direita.
 // Sem `linkHref` o link fica como placeholder (âncora sem destino).
@@ -15,7 +16,7 @@ const SectionHeader = ({ title, linkLabel, linkHref }) => (
         href={linkHref ?? undefined}
         className={`${styles.sectionLink} ${styles.focusRing}`}
       >
-        {linkLabel}
+        <SpinText text={linkLabel} />
       </a>
     )}
   </div>

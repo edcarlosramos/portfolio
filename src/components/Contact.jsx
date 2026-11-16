@@ -1,6 +1,7 @@
 import React from 'react'
 import styles from '../styles'
 import { contacts } from '../constants'
+import SpinText from './SpinText'
 
 const Contact = () => (
   <section id="contato" data-nav-theme="light" className={styles.sectionY}>
@@ -20,9 +21,9 @@ const Contact = () => (
             <dd>
               <a
                 href={contact.href ?? undefined}
-                className={`${styles.focusRing} break-all underline underline-offset-[0.2em] decoration-[0.08em] transition-colors duration-300 hover:text-dim-bluestrong`}
+                className={`${styles.focusRing} cursor-pointer`}
               >
-                {contact.value}
+                <SpinText text={contact.value} />
               </a>
             </dd>
           </div>

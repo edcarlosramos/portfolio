@@ -1,80 +1,55 @@
-import React, { useRef, useEffect } from 'react'
-import gsap from 'gsap'
+import React from 'react'
 import styles from '../styles'
-import { MOTION_OK, skillGroups, softSkills } from '../constants'
+import { skillGroups, softSkills } from '../constants'
 
-// Cópias da lista no letreiro: garante que ele cubra telas largas e que o
-// loop (deslocar exatamente uma cópia) não tenha emenda visível.
-const MARQUEE_COPIES = 4
+// Mesmo padrão das pílulas da navbar (raio, espaçamento, peso e contorno
+// inset de 0,5px), só que com fundo branco translúcido sobre o fade da linha.
+const pill =
+  'inline-block align-middle mx-[calc(var(--gap)/2)] my-[calc(var(--pad)+var(--line-gap)/2)] rounded-[clamp(8px,0.85vw,12px)] px-[0.7em] py-[0.35em] font-sans font-semibold tracking-[-0.02em] leading-[1.45] whitespace-nowrap text-dim-white text-(length:--fs) bg-dim-mist/25 shadow-nav-pill'
 
-const pillBase =
-  'font-sans font-medium leading-none whitespace-nowrap text-dim-white text-[clamp(13px,1.6vw,23px)] rounded-[clamp(8px,1.1vw,16px)] px-[0.9em] py-[0.5em] shadow-inner-lightcard'
+// Cada linha é um elemento inline com `box-decoration-clone`: quando as
+// pílulas quebram de linha (telas menores), o fundo vira um bloco por linha,
+// abraçando só as pílulas daquela linha em vez de ocupar a largura toda.
+// Com fonte 0px a caixa inline não tem altura própria; a altura do fundo vem
+// do padding vertical (meia pílula + respiro), centralizado na pílula.
+// Altura da pílula = 1.45 (leading) + 0.7 (py) = 2.15 × --fs.
+const rowBox =
+  '[--fs:clamp(15px,1.6vw,23px)] [--pad:clamp(5px,0.55vw,8px)] [--gap:clamp(6px,0.9vw,12px)] [--line-gap:clamp(4px,0.5vw,8px)] inline box-decoration-clone text-[length:0px] rounded-[clamp(10px,1.1vw,16px)] px-[calc(var(--pad)-var(--gap)/2)] py-[calc(var(--fs)*1.075+var(--pad))]'
 
-const Skills = () => {
-  const marqueeRef = useRef(null)
+// O que diferencia cada linha é o fade azul do fundo.
+const rows = [
+  { ...skillGroups[0], fade: 'from-blueton-bg to-dim-bluestrong' },
+  { ...skillGroups[1], fade: 'from-dim-bluestrong to-dim-sky' },
+  { id: 'interpessoais', label: 'Habilidades interpessoais', items: softSkills, fade: 'from-dim-navy to-blueton-bg' },
+]
 
-  useEffect(() => {
-    const mm = gsap.matchMedia()
+const Skills = () => (
+  <section
+    aria-labelledby="skills-title"
+    data-nav-theme="light"
+    className={styles.sectionY}
+  >
+    <h2 id="skills-title" className="sr-only">
+      Habilidades
+    </h2>
 
-    mm.add(MOTION_OK, () => {
-      gsap.to(marqueeRef.current, {
-        xPercent: -100 / MARQUEE_COPIES,
-        duration: 26,
-        ease: 'none',
-        repeat: -1,
-      })
-    })
-
-    return () => mm.revert()
-  }, [])
-
-  return (
-    <section
-      aria-labelledby="skills-title"
-      data-nav-theme="light"
-      className={`overflow-hidden ${styles.sectionY}`}
-    >
-      <h2 id="skills-title" className="sr-only">
-        Habilidades
-      </h2>
-
-      <div className={`${styles.container} flex flex-col items-center gap-[clamp(10px,1.2vw,16px)]`}>
-        {skillGroups.map((group) => (
+    <div className={`${styles.container} flex flex-col items-center gap-[clamp(10px,1.2vw,16px)]`}>
+      {rows.map((row) => (
+        <div key={row.id} data-reveal className="text-center">
           <ul
-            key={group.id}
-            data-reveal
-            aria-label={group.label}
-            className="flex flex-wrap justify-center gap-[clamp(6px,0.9vw,12px)] rounded-[clamp(14px,1.8vw,24px)] border-2 border-blueton-bg/70 bg-dim-sky/45 p-[clamp(6px,0.7vw,10px)]"
+            aria-label={row.label}
+            className={`${rowBox} bg-linear-to-r ${row.fade}`}
           >
-            {group.items.map((skill) => (
-              <li key={skill} className={`${pillBase} bg-dim-bluestrong`}>
+            {row.items.map((skill) => (
+              <li key={skill} className={pill}>
                 {skill}
               </li>
             ))}
           </ul>
-        ))}
-      </div>
-
-      <div data-reveal className="mt-[clamp(10px,1.2vw,16px)]">
-        <div ref={marqueeRef} className="flex w-max will-change-transform">
-          {Array.from({ length: MARQUEE_COPIES }, (_, copy) => (
-            <ul
-              key={copy}
-              aria-hidden={copy > 0}
-              aria-label={copy === 0 ? 'Habilidades interpessoais' : undefined}
-              className="flex shrink-0 gap-[clamp(8px,1.2vw,16px)] pr-[clamp(8px,1.2vw,16px)]"
-            >
-              {softSkills.map((skill) => (
-                <li key={skill} className={`${pillBase} bg-blueton-bg`}>
-                  {skill}
-                </li>
-              ))}
-            </ul>
-          ))}
         </div>
-      </div>
-    </section>
-  )
-}
+      ))}
+    </div>
+  </section>
+)
 
 export default Skills

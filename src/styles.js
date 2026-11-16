@@ -9,7 +9,7 @@ const styles = {
   container: "w-full max-w-[1440px] mx-auto px-[clamp(20px,7vw,100px)]",
   sectionY: "py-[clamp(48px,7vw,96px)]",
   sectionTitle: "font-sans font-semibold tracking-[-0.02em] leading-none text-dim-navy text-[clamp(32px,4.4vw,60px)]",
-  sectionLink: "font-sans font-semibold tracking-[-0.01em] text-dim-navy text-[clamp(16px,2.1vw,30px)] underline underline-offset-[0.2em] decoration-[0.08em] transition-colors duration-300 hover:text-dim-bluestrong",
+  sectionLink: "cursor-pointer font-sans font-semibold tracking-[-0.01em] text-dim-navy text-[clamp(16px,2.1vw,30px)]",
   focusRing: "outline-none focus-visible:ring-2 focus-visible:ring-dim-bluestrong focus-visible:ring-offset-2 focus-visible:ring-offset-transparent",
 
   flexCenter: "flex justify-center items-center",

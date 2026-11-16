@@ -16,7 +16,7 @@ export const statement =
 export const projects = [
   {
     id: 'twotalk-plataforma',
-    name: 'twotalk',
+    name: 'two make it',
     description: 'Plataforma de ensino de idiomas',
     roles: ['Co-founder', 'Product Manager', 'Desenvolvedor'],
     image: null,
@@ -24,7 +24,7 @@ export const projects = [
   },
   {
     id: 'twotalk-checkin',
-    name: 'twotalk',
+    name: 'two make it',
     description: 'Plataforma de ensino de idiomas',
     roles: ['Co-founder', 'Product Manager', 'Desenvolvedor'],
     image: null,
@@ -32,7 +32,7 @@ export const projects = [
   },
   {
     id: 'twotalk-podcast',
-    name: 'twotalk',
+    name: 'two make it',
     description: 'Plataforma de ensino de idiomas',
     roles: ['Co-founder', 'Product Manager', 'Desenvolvedor'],
     image: null,
@@ -40,7 +40,7 @@ export const projects = [
   },
   {
     id: 'twotalk-diagrama',
-    name: 'twotalk',
+    name: 'two make it',
     description: 'Plataforma de ensino de idiomas',
     roles: ['Co-founder', 'Product Manager', 'Desenvolvedor'],
     image: null,
@@ -74,7 +74,6 @@ export const skillGroups = [
 ];
 
 export const softSkills = [
-  'Empatia',
   'Comunicação',
   'Pensamento Analítico',
   'Rápido Aprendizado',

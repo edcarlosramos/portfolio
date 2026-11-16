@@ -4,12 +4,13 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import styles from '../styles'
 import { MOTION_OK, projects } from '../constants'
 import SectionHeader from './SectionHeader'
+import SpinText from './SpinText'
 
 gsap.registerPlugin(ScrollTrigger)
 
 const ProjectCard = ({ project }) => (
   <article className="flex h-full flex-col rounded-[clamp(16px,2vw,28px)] p-[clamp(12px,1.7vw,24px)] bg-dim-white shadow-card">
-    <div className="aspect-[422/294] overflow-hidden rounded-[clamp(10px,1.4vw,20px)]">
+    <div className="aspect-[415/390] overflow-hidden rounded-[clamp(10px,1.4vw,20px)]">
       {project.image ? (
         <img
           src={project.image}
@@ -36,9 +37,9 @@ const ProjectCard = ({ project }) => (
       <a
         href={project.href ?? undefined}
         aria-label={`Sobre o projeto ${project.name}`}
-        className={`${styles.focusRing} font-sans font-medium text-dim-navy text-[clamp(12px,1vw,14px)] underline underline-offset-[0.2em] transition-colors duration-300 hover:text-dim-bluestrong`}
+        className={`${styles.focusRing} cursor-pointer font-sans font-medium text-dim-navy text-[clamp(12px,1vw,14px)]`}
       >
-        sobre
+        <SpinText text="sobre" />
       </a>
     </div>
 
