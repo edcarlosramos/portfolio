@@ -58,7 +58,7 @@ const Hero = () => {
         className="bg-abyss-ellipse pointer-events-none absolute inset-x-0 top-0 -z-10 h-[135%]"
       />
 
-      <div ref={cardRef} className="relative isolate @container flex w-full max-w-[1345px] h-[clamp(440px,130vw,700px)] sm:h-[clamp(700px,calc(14.6cqw+641.6px),838px)] rounded-[clamp(16px,3cqw,32px)] justify-start items-center overflow-hidden py-[6cqw] 
+      <div ref={cardRef} data-hero-card className="relative isolate @container flex w-full max-w-[1345px] h-[clamp(440px,130vw,700px)] sm:h-[clamp(700px,calc(14.6cqw+641.6px),838px)] rounded-[clamp(16px,3cqw,32px)] justify-start items-center overflow-hidden py-[6cqw] 
       bg-linear-to-t from-hugeblack-bg from-0% to-blueton-bg to-100% shadow-inner-light">
         <MeshGradientBackground />
 

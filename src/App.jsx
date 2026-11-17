@@ -9,6 +9,7 @@ import {
   Skills,
   Contact,
   Footer,
+  Preloader,
 } from './components';
 import useScrollReveal from './hooks/useScrollReveal';
 
@@ -36,6 +37,10 @@ const App = () => {
           <Footer />
         </div>
       </SmoothScroll>
+
+      {/* Depois do SmoothScroll: o preloader pausa o smoother já criado e
+          anima o card do hero e a navbar na entrada. */}
+      <Preloader />
     </>
   );
 };

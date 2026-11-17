@@ -227,6 +227,7 @@ const Navbar = () => {
   return (
     <nav
       ref={navRef}
+      data-site-nav
       aria-label="Navegação principal"
       className="fixed z-50 top-[clamp(10px,1.4vw,20px)] right-[clamp(10px,2vw,36px)]"
     >
