@@ -6,9 +6,11 @@
 //   contagem, não.
 // - `heroReady`: o hero terminou esse preparo. A tela espera por ele antes de
 //   sair, assim o custo não cai na transição.
-// - `introDone`: a tela de carregamento começou a sair (ou nem apareceu). Loops
-//   contínuos que não precisam rodar escondidos (ex.: render por quadro do
-//   WebGL) só começam depois dele.
+// - `introDone`: a tela de carregamento começou a sair (ou nem apareceu).
+// - `introEnd`: a saída terminou (ou a tela nem apareceu). Loops contínuos do
+//   hero (render por quadro do WebGL, movimento dos blobs) só começam aqui:
+//   durante a revelação o card só se move inteiro, e com o conteúdo parado a
+//   GPU reaproveita o que já desenhou em vez de refazer tudo a cada quadro.
 //
 // Todas são promessas resolvidas uma única vez (idempotentes, o que importa no
 // StrictMode, que monta os efeitos duas vezes).
@@ -33,6 +35,10 @@ export const markHeroReady = () => hero.resolve()
 
 export const introDone = intro.promise
 export const markIntroDone = () => intro.resolve()
+
+const end = deferred()
+export const introEnd = end.promise
+export const markIntroEnd = () => end.resolve()
 
 // Classe no <html> (posta já no index.html) enquanto a tela de carregamento
 // cobre o site: as seções abaixo do hero ficam com `content-visibility:

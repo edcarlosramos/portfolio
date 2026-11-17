@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react'
 import gsap from 'gsap'
 import { MOTION_OK } from '../constants'
-import { heroPrepare, introDone, markHeroReady } from '../utils/intro'
+import { heroPrepare, introEnd, markHeroReady } from '../utils/intro'
 
 // Texto em liquid glass renderizado em WebGL.
 //
@@ -346,17 +346,23 @@ const GlassTextGL = ({ text, getLight, fallbackClassName = '' }) => {
       markHeroReady()
     })
 
-    // Só renderiza com o texto na tela.
+    // Só renderiza com o texto na tela. Ao (re)aparecer, desenha na hora: com
+    // a tela de carregamento o hero começa fora do layout (o observador o dá
+    // como invisível), e sem isso o "Ramos." só surgiria quando o loop por
+    // quadro começasse, depois da revelação.
     const io = new IntersectionObserver(([entry]) => {
       visible = entry.isIntersecting
+      if (visible) render()
     })
     io.observe(canvas)
 
-    // O loop por quadro (que lê posições do DOM) só começa depois da tela de
-    // carregamento; antes disso ele só competiria com a animação dela.
+    // O loop por quadro (shader pesado + leitura de posições do DOM) só começa
+    // quando a tela de carregamento terminou de sair. Durante a revelação o
+    // canvas se move junto com o card, então a imagem já desenhada continua
+    // certa, e a GPU fica livre para a transição.
     const mm = gsap.matchMedia()
     const tick = () => render(gsap.ticker.deltaRatio(60))
-    introDone.then(() => {
+    introEnd.then(() => {
       if (!alive) return
       mm.add(MOTION_OK, () => {
         gsap.ticker.add(tick)

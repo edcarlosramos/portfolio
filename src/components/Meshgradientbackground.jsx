@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, useLayoutEffect, useState } from 'react'
 import gsap from 'gsap'
+import { introEnd } from '../utils/intro'
 
 const hexToRgba = (hex, alpha = 1) => {
   if (!hex) return 'transparent'
@@ -97,32 +98,48 @@ const MeshGradientBackground = ({ blobs = DEFAULT_BLOBS, className = '' }) => {
   const scale = useCardScale(containerRef)
 
   useEffect(() => {
+    let alive = true
     const ctx = gsap.context(() => {
+      const tweens = []
       blobRefs.current.forEach((blobEl, i) => {
         if (!blobEl || !blobs[i]) return
         const { moveY = -46, moveX = 24, duration = 7, delay = 0 } = blobs[i]
 
-        gsap.to(blobEl, {
+        tweens.push(gsap.to(blobEl, {
           y: moveY * scale.y,
           duration,
           delay,
           ease: 'sine.inOut',
           repeat: -1,
           yoyo: true,
-        })
+        }))
 
-        gsap.to(blobEl, {
+        tweens.push(gsap.to(blobEl, {
           x: moveX * scale.x,
           duration: duration * 1.35,
           delay: delay + 0.4,
           ease: 'sine.inOut',
           repeat: -1,
           yoyo: true,
-        })
+        }))
+      })
+
+      // Parados até a tela de carregamento terminar de sair: blobs com blur se
+      // movendo durante a revelação obrigavam a GPU a refazer o desfoque a
+      // cada quadro, e era isso que travava a transição no celular. Depois,
+      // aceleram suavemente até a velocidade normal.
+      tweens.forEach((t) => t.timeScale(0).pause())
+      introEnd.then(() => {
+        if (!alive) return
+        tweens.forEach((t) => t.resume())
+        gsap.to(tweens, { timeScale: 1, duration: 1.2, ease: 'power1.in' })
       })
     }, containerRef)
 
-    return () => ctx.revert()
+    return () => {
+      alive = false
+      ctx.revert()
+    }
   }, [blobs, scale])
 
   return (

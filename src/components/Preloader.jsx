@@ -3,7 +3,7 @@ import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { ScrollSmoother } from 'gsap/ScrollSmoother'
 import { MOTION_OK } from '../constants'
-import { endLoadingLayout, heroReady, markHeroPrepare, markIntroDone } from '../utils/intro'
+import { endLoadingLayout, heroReady, markHeroPrepare, markIntroDone, markIntroEnd } from '../utils/intro'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -80,6 +80,7 @@ const Preloader = () => {
       endLoadingLayout()
       markHeroPrepare()
       markIntroDone()
+      markIntroEnd()
       return undefined
     }
     removeBootScreen()
@@ -99,10 +100,11 @@ const Preloader = () => {
     window.scrollTo(0, 0)
 
     const ctx = gsap.context(() => {
-      // `opacity` (e não `visibility`) + `will-change`: o hero continua sendo
-      // pintado por trás da tela, então quando ela sai ele já está pronto na
-      // GPU, sem o "engasgo" de rasterizar tudo no primeiro quadro.
-      if (heroCard) gsap.set(heroCard, { y: 120, scale: 0.94, opacity: 0, willChange: 'transform, opacity' })
+      // O card entra só com `transform` (sem `opacity`): ele tem blobs com
+      // blur, `backdrop-filter` e WebGL dentro, e um fade obrigaria a GPU a
+      // redesenhar o card inteiro numa camada extra a cada quadro — era o que
+      // mais travava a revelação no celular. A cortina já o esconde até sair.
+      if (heroCard) gsap.set(heroCard, { y: 120, scale: 0.94, willChange: 'transform' })
       if (nav) gsap.set(nav, { y: -24, opacity: 0, willChange: 'transform, opacity' })
 
       // Setters rápidos: sem criar um tween por quadro.
@@ -158,9 +160,10 @@ const Preloader = () => {
             onComplete: () => {
               // Só limpa o que animou; o card mantém a própria camada de GPU
               // (removê-la forçaria repintar todo o hero de uma vez).
-              if (heroCard) gsap.set(heroCard, { clearProps: 'transform,opacity' })
+              if (heroCard) gsap.set(heroCard, { clearProps: 'transform' })
               if (nav) gsap.set(nav, { clearProps: 'transform,opacity,willChange' })
               smoother?.paused(false)
+              markIntroEnd()
               setDone(true)
             },
           })
@@ -183,7 +186,7 @@ const Preloader = () => {
             .to(frontRef.current, { yPercent: -100, duration: 1.1, ease: 'expo.inOut' }, '-=0.15')
             .to(backRef.current, { yPercent: -100, duration: 1.1, ease: 'expo.inOut' }, '<0.12')
             // O hero entra subindo enquanto a tela sai.
-            .to(heroCard, { y: 0, scale: 1, opacity: 1, duration: 1.3, ease: 'expo.out' }, '<0.35')
+            .to(heroCard, { y: 0, scale: 1, duration: 1.3, ease: 'expo.out' }, '<0.35')
             .to(nav, { y: 0, opacity: 1, duration: 0.8, ease: 'power3.out' }, '<0.4')
         })
     }, rootRef)
