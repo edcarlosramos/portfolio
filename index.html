@@ -16,6 +16,64 @@
       if (window.matchMedia('(prefers-reduced-motion: no-preference)').matches) {
         document.documentElement.classList.add('is-loading')
       }
+
+      // Rede de segurança: se o site não iniciar (script que não baixou,
+      // navegador sem suporte, erro que derruba o React), em vez de ficar preso
+      // numa tela preta ou no "Carregando" mostra um aviso com o motivo.
+      ;(function () {
+        var errors = []
+        var shown = false
+        var describe = function (e) {
+          if (!e) return 'erro desconhecido'
+          if (e.target && e.target !== window && (e.target.src || e.target.href)) {
+            return 'falha ao baixar ' + (e.target.src || e.target.href)
+          }
+          var err = e.error || e.reason || e
+          return String((err && (err.stack || err.message)) || e.message || err)
+        }
+        window.__siteFail = function (reason) {
+          if (reason) errors.push(describe(reason))
+          if (shown) return
+          shown = true
+          var show = function () {
+            document.documentElement.classList.remove('is-loading')
+            var boot = document.getElementById('boot-loader')
+            if (boot) boot.remove()
+            var box = document.createElement('div')
+            box.setAttribute('role', 'alert')
+            box.style.cssText = 'position:fixed;inset:0;z-index:2147483647;display:flex;flex-direction:column;justify-content:center;gap:16px;padding:24px;background:#000c17;color:#e5ebf1;font:16px/1.5 system-ui,sans-serif'
+            var title = document.createElement('p')
+            title.style.cssText = 'margin:0;font-size:20px;font-weight:600'
+            title.textContent = 'Não foi possível carregar o site.'
+            var button = document.createElement('button')
+            button.type = 'button'
+            button.textContent = 'Tentar de novo'
+            button.style.cssText = 'align-self:flex-start;padding:10px 18px;border:0;border-radius:999px;background:#e5ebf1;color:#000c17;font:inherit;font-weight:600'
+            button.onclick = function () { location.reload() }
+            var details = document.createElement('details')
+            details.style.cssText = 'font-size:12px;opacity:.7'
+            var summary = document.createElement('summary')
+            summary.textContent = 'Detalhes técnicos'
+            var pre = document.createElement('pre')
+            pre.style.cssText = 'white-space:pre-wrap;word-break:break-word;max-height:50vh;overflow:auto'
+            pre.textContent = errors.join('\n\n').slice(0, 4000) + '\n\n' + navigator.userAgent
+            details.append(summary, pre)
+            box.append(title, button, details)
+            document.body.append(box)
+          }
+          if (document.body) show()
+          else document.addEventListener('DOMContentLoaded', show)
+        }
+        // `true` (captura) também pega falha ao baixar um <script>.
+        addEventListener('error', function (e) {
+          errors.push(describe(e))
+          if (e.target && e.target.tagName === 'SCRIPT') window.__siteFail()
+        }, true)
+        addEventListener('unhandledrejection', function (e) { errors.push(describe(e)) })
+        setTimeout(function () {
+          if (!window.__siteStarted) window.__siteFail('o site não iniciou em 15s')
+        }, 15000)
+      })()
     </script>
     <style>
       /* Cópia estática da tela de carregamento (src/components/Preloader.jsx):
