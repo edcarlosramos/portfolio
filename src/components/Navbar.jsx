@@ -87,7 +87,7 @@ const IDLE_DELAY = 0.35
 const SMALL_OR_TOUCH = '(max-width: 767px), (pointer: coarse)'
 const IDLE_DELAY_SMALL = 1.5
 
-const useCollapseOnScroll = (listRef, iconRef) => {
+const useCollapseOnScroll = (listRef, iconRef, bgRef) => {
   useEffect(() => {
     const mm = gsap.matchMedia()
 
@@ -96,11 +96,11 @@ const useCollapseOnScroll = (listRef, iconRef) => {
       const idleDelay = context.conditions.small ? IDLE_DELAY_SMALL : IDLE_DELAY
       const list = listRef.current
       const icon = iconRef.current
+      const bg = bgRef.current
       const items = gsap.utils.toArray(list.children)
       let collapsed = false
 
       gsap.set(icon, { autoAlpha: 0, scale: 0.5, rotate: -90 })
-      gsap.set(list, { clipPath: 'inset(0px 0px 0px 0px round 12px)' })
 
       const collapse = () => {
         if (collapsed) return
@@ -109,8 +109,12 @@ const useCollapseOnScroll = (listRef, iconRef) => {
         const height = list.offsetHeight
         const target = width - height / 2
 
-        gsap.to(list, {
-          clipPath: `inset(0px 0px 0px ${width - height}px round 12px)`,
+        // O fundo desliza para a direita (transform, na GPU) e o que passa da
+        // borda é cortado pela moldura fixa: sobra só o quadrado do ícone.
+        // Antes era um `clip-path` animado, que repintava a navbar a cada
+        // quadro bem no começo de cada rolagem.
+        gsap.to(bg, {
+          x: width - height,
           duration: 0.5,
           ease: 'power3.inOut',
           overwrite: 'auto',
@@ -147,8 +151,8 @@ const useCollapseOnScroll = (listRef, iconRef) => {
           ease: 'power2.in',
           overwrite: 'auto',
         })
-        gsap.to(list, {
-          clipPath: 'inset(0px 0px 0px 0px round 12px)',
+        gsap.to(bg, {
+          x: 0,
           duration: 0.55,
           delay: 0.1,
           ease: 'power3.out',
@@ -179,12 +183,12 @@ const useCollapseOnScroll = (listRef, iconRef) => {
 
       return () => {
         idle.kill()
-        gsap.set([list, ...items, icon], { clearProps: 'all' })
+        gsap.set([bg, ...items, icon], { clearProps: 'all' })
       }
     })
 
     return () => mm.revert()
-  }, [listRef, iconRef])
+  }, [listRef, iconRef, bgRef])
 }
 
 // Publica em `--nav-bottom` (no <html>) onde a navbar termina, em px a partir
@@ -215,8 +219,9 @@ const Navbar = () => {
   const navRef = useRef(null)
   const listRef = useRef(null)
   const iconRef = useRef(null)
+  const bgRef = useRef(null)
   const theme = THEMES[useNavTheme(navRef)]
-  useCollapseOnScroll(listRef, iconRef)
+  useCollapseOnScroll(listRef, iconRef, bgRef)
   useNavBottomVar(navRef)
 
   const handleClick = (event, id) => {
@@ -231,9 +236,22 @@ const Navbar = () => {
       aria-label="Navegação principal"
       className="fixed z-50 top-[clamp(10px,1.4vw,20px)] right-[clamp(10px,2vw,36px)]"
     >
+      {/* Fundo da barra: uma moldura fixa com cantos arredondados que corta
+          (overflow) uma camada interna; ao recolher, só a camada interna se
+          move. Fica fora do <ul> porque lista só pode ter <li>. */}
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 overflow-hidden rounded-[10px] sm:rounded-[12px]"
+      >
+        <span
+          ref={bgRef}
+          className={`absolute inset-0 rounded-[inherit] will-change-transform transition-colors duration-500 ${theme.list}`}
+        />
+      </span>
+
       <ul
         ref={listRef}
-        className={`relative flex items-center gap-[4px] rounded-[10px] p-[4px] sm:gap-[clamp(6px,1.1vw,15px)] sm:rounded-[12px] sm:p-[6px] transition-colors duration-500 ${theme.list}`}
+        className="relative flex items-center gap-[4px] rounded-[10px] p-[4px] sm:gap-[clamp(6px,1.1vw,15px)] sm:rounded-[12px] sm:p-[6px]"
       >
         {navLinks.map((link) => (
           <li key={link.id}>
