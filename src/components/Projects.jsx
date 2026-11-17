@@ -1,12 +1,106 @@
 import React, { useRef, useEffect } from 'react'
 import gsap from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import styles from '../styles'
 import { MOTION_OK, projects } from '../constants'
 import SectionHeader from './SectionHeader'
 import SpinText from './SpinText'
 
-gsap.registerPlugin(ScrollTrigger)
+// Distância mínima (px) para um clique virar arrasto; abaixo disso o clique
+// segue normal (ex.: o link "sobre" do card).
+const DRAG_THRESHOLD = 6
+
+// Com o mouse, clicar, segurar e arrastar para o lado move a fileira; ao soltar
+// ela continua um pouco no embalo. No toque o trilho já desliza nativamente,
+// então só o mouse (pointerType "mouse") passa por aqui.
+const useDragScroll = (trackRef) => {
+  useEffect(() => {
+    const track = trackRef.current
+    if (!track) return undefined
+
+    let pointerId = null
+    let startX = 0
+    let startScroll = 0
+    let dragged = false
+    let lastX = 0
+    let lastTime = 0
+    let velocity = 0 // px por ms
+    const reduceMotion = !window.matchMedia(MOTION_OK).matches
+
+    const onPointerDown = (event) => {
+      if (event.pointerType !== 'mouse' || event.button !== 0) return
+      gsap.killTweensOf(track)
+      pointerId = event.pointerId
+      startX = lastX = event.clientX
+      startScroll = track.scrollLeft
+      lastTime = performance.now()
+      velocity = 0
+      dragged = false
+    }
+
+    const onPointerMove = (event) => {
+      if (event.pointerId !== pointerId) return
+      const dx = event.clientX - startX
+      if (!dragged) {
+        if (Math.abs(dx) < DRAG_THRESHOLD) return
+        dragged = true
+        track.setPointerCapture(pointerId)
+        track.dataset.dragging = ''
+      }
+      track.scrollLeft = startScroll - dx
+      const now = performance.now()
+      const dt = now - lastTime
+      if (dt > 0) velocity = 0.8 * ((event.clientX - lastX) / dt) + 0.2 * velocity
+      lastX = event.clientX
+      lastTime = now
+    }
+
+    const onPointerUp = (event) => {
+      if (event.pointerId !== pointerId) return
+      pointerId = null
+      if (!dragged) return
+      delete track.dataset.dragging
+      if (track.hasPointerCapture(event.pointerId)) track.releasePointerCapture(event.pointerId)
+      // Embalo: segue na direção do arrasto e desacelera.
+      const idle = performance.now() - lastTime > 80
+      if (!reduceMotion && !idle && Math.abs(velocity) > 0.05) {
+        gsap.to(track, {
+          scrollLeft: track.scrollLeft - velocity * 350,
+          duration: 0.9,
+          ease: 'power3.out',
+        })
+      }
+    }
+
+    // Depois de um arrasto, o clique que o navegador dispara ao soltar não
+    // deve abrir links dos cards.
+    const onClick = (event) => {
+      if (!dragged) return
+      event.preventDefault()
+      event.stopPropagation()
+      dragged = false
+    }
+
+    // Arrasto nativo de imagens/links atrapalharia o arrasto da fileira.
+    const onDragStart = (event) => event.preventDefault()
+
+    track.addEventListener('pointerdown', onPointerDown)
+    track.addEventListener('pointermove', onPointerMove)
+    track.addEventListener('pointerup', onPointerUp)
+    track.addEventListener('pointercancel', onPointerUp)
+    track.addEventListener('click', onClick, true)
+    track.addEventListener('dragstart', onDragStart)
+
+    return () => {
+      gsap.killTweensOf(track)
+      track.removeEventListener('pointerdown', onPointerDown)
+      track.removeEventListener('pointermove', onPointerMove)
+      track.removeEventListener('pointerup', onPointerUp)
+      track.removeEventListener('pointercancel', onPointerUp)
+      track.removeEventListener('click', onClick, true)
+      track.removeEventListener('dragstart', onDragStart)
+    }
+  }, [trackRef])
+}
 
 const ProjectCard = ({ project }) => (
   <article className="flex h-full flex-col rounded-[clamp(16px,2vw,28px)] p-[clamp(12px,1.7vw,24px)] bg-dim-white shadow-card">
@@ -52,33 +146,40 @@ const ProjectCard = ({ project }) => (
   </article>
 )
 
+// Deixa a fileira centralizada: se os cards cabem, o CSS (justify-center-safe)
+// centra; se não cabem, ela começa rolada até o meio. Recentraliza quando a
+// janela muda de tamanho, até a pessoa mexer na fileira.
+const useCenteredTrack = (trackRef) => {
+  useEffect(() => {
+    const track = trackRef.current
+    if (!track) return undefined
+    let touched = false
+    const center = () => {
+      if (!touched) track.scrollLeft = (track.scrollWidth - track.clientWidth) / 2
+    }
+    const markTouched = () => {
+      touched = true
+    }
+    center()
+    const observer = new ResizeObserver(center)
+    observer.observe(track)
+    const events = ['pointerdown', 'wheel', 'touchstart', 'keydown']
+    events.forEach((type) => track.addEventListener(type, markTouched, { passive: true }))
+    return () => {
+      observer.disconnect()
+      events.forEach((type) => track.removeEventListener(type, markTouched))
+    }
+  }, [trackRef])
+}
+
+// A fileira de cards fica parada durante a rolagem da página; ela se move ao
+// arrastar com o mouse, deslizar no toque, rolar na horizontal pelo trackpad
+// ou pelas setas do teclado (o trilho é um scroll nativo).
 const Projects = () => {
   const sectionRef = useRef(null)
   const trackRef = useRef(null)
-
-  // A fileira de cards desliza na horizontal acompanhando a rolagem vertical.
-  // Como o trilho é um scroll nativo, arrastar/teclado continuam funcionando.
-  useEffect(() => {
-    const mm = gsap.matchMedia()
-
-    mm.add(MOTION_OK, () => {
-      const track = trackRef.current
-
-      gsap.to(track, {
-        scrollLeft: () => track.scrollWidth - track.clientWidth,
-        ease: 'none',
-        scrollTrigger: {
-          trigger: sectionRef.current,
-          start: 'top bottom',
-          end: 'bottom top',
-          scrub: true,
-          invalidateOnRefresh: true,
-        },
-      })
-    })
-
-    return () => mm.revert()
-  }, [])
+  useDragScroll(trackRef)
+  useCenteredTrack(trackRef)
 
   return (
     <section
@@ -95,7 +196,7 @@ const Projects = () => {
         ref={trackRef}
         tabIndex={0}
         aria-label="Lista de projetos"
-        className={`${styles.focusRing} no-scrollbar mt-[clamp(8px,1.6vw,24px)] flex gap-[clamp(16px,4.4vw,64px)] overflow-x-auto px-[clamp(20px,7vw,100px)] py-[clamp(16px,2vw,32px)]`}
+        className={`${styles.focusRing} no-scrollbar mt-[clamp(8px,1.6vw,24px)] flex justify-center-safe gap-[clamp(16px,4.4vw,64px)] overflow-x-auto cursor-grab select-none data-dragging:cursor-grabbing px-[clamp(20px,7vw,100px)] py-[clamp(16px,2vw,32px)]`}
       >
         {projects.map((project) => (
           <li

@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react'
+import React, { useRef, useState, useEffect, useLayoutEffect } from 'react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { ScrollSmoother } from 'gsap/ScrollSmoother'
@@ -79,11 +79,21 @@ const useNavTheme = (navRef) => {
 // um ScrollTrigger, que acompanha a posição suavizada do ScrollSmoother.
 const IDLE_DELAY = 0.35
 
+// Em telas pequenas e touch o ScrollSmoother não suaviza a rolagem: ela para
+// na hora, e com 0,35s as pílulas voltavam logo, abrindo e fechando entre um
+// deslize e outro. No desktop a suavização (smooth: 1.2) segue rolando depois
+// que o usuário para, então a espera real fica perto de 1,5s; aqui o tempo
+// parado antes de expandir é equivalente.
+const SMALL_OR_TOUCH = '(max-width: 767px), (pointer: coarse)'
+const IDLE_DELAY_SMALL = 1.5
+
 const useCollapseOnScroll = (listRef, iconRef) => {
   useEffect(() => {
     const mm = gsap.matchMedia()
 
-    mm.add(MOTION_OK, () => {
+    mm.add({ motion: MOTION_OK, small: SMALL_OR_TOUCH }, (context) => {
+      if (!context.conditions.motion) return undefined
+      const idleDelay = context.conditions.small ? IDLE_DELAY_SMALL : IDLE_DELAY
       const list = listRef.current
       const icon = iconRef.current
       const items = gsap.utils.toArray(list.children)
@@ -156,7 +166,7 @@ const useCollapseOnScroll = (listRef, iconRef) => {
         })
       }
 
-      const idle = gsap.delayedCall(IDLE_DELAY, expand).pause()
+      const idle = gsap.delayedCall(idleDelay, expand).pause()
 
       ScrollTrigger.create({
         start: 0,
@@ -177,12 +187,37 @@ const useCollapseOnScroll = (listRef, iconRef) => {
   }, [listRef, iconRef])
 }
 
+// Publica em `--nav-bottom` (no <html>) onde a navbar termina, em px a partir
+// do topo da janela. O hero usa esse valor para nunca ficar embaixo dela.
+// Mede antes da primeira pintura e de novo quando a navbar ou a janela mudam
+// de tamanho (o `top` da navbar varia com a largura da janela).
+const useNavBottomVar = (navRef) => {
+  useLayoutEffect(() => {
+    const nav = navRef.current
+    if (!nav) return undefined
+    const root = document.documentElement
+    const update = () => {
+      root.style.setProperty('--nav-bottom', `${Math.ceil(nav.offsetTop + nav.offsetHeight)}px`)
+    }
+    update()
+    const observer = new ResizeObserver(update)
+    observer.observe(nav)
+    window.addEventListener('resize', update)
+    return () => {
+      observer.disconnect()
+      window.removeEventListener('resize', update)
+      root.style.removeProperty('--nav-bottom')
+    }
+  }, [navRef])
+}
+
 const Navbar = () => {
   const navRef = useRef(null)
   const listRef = useRef(null)
   const iconRef = useRef(null)
   const theme = THEMES[useNavTheme(navRef)]
   useCollapseOnScroll(listRef, iconRef)
+  useNavBottomVar(navRef)
 
   const handleClick = (event, id) => {
     event.preventDefault()

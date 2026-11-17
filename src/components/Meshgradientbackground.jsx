@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react'
+import React, { useRef, useEffect, useLayoutEffect, useState } from 'react'
 import gsap from 'gsap'
 
 const hexToRgba = (hex, alpha = 1) => {
@@ -60,9 +60,41 @@ const DEFAULT_BLOBS = [
   },
 ]
 
+// Os blobs foram desenhados para o card do desktop (REFERENCE). Em cards
+// menores (celular, tablet) tudo é reduzido na mesma proporção: tamanho, blur
+// e brilho pelo maior dos dois fatores (para a luz não sumir num card estreito
+// e alto), o movimento horizontal pela largura e o vertical pela altura.
+const REFERENCE = { width: 1345, height: 838 }
+const round = (n) => Math.round(n * 100) / 100
+
+const useCardScale = (ref) => {
+  const [scale, setScale] = useState({ x: 1, y: 1, size: 1 })
+
+  // Mede antes da primeira pintura (sem "piscar" a luz no tamanho do desktop)
+  // e de novo sempre que o card muda de tamanho.
+  useLayoutEffect(() => {
+    const el = ref.current
+    if (!el) return undefined
+    const measure = (width, height) => {
+      if (!width || !height) return
+      const x = round(Math.min(1, width / REFERENCE.width))
+      const y = round(Math.min(1, height / REFERENCE.height))
+      const size = Math.max(x, y)
+      setScale((prev) => (prev.x === x && prev.y === y ? prev : { x, y, size }))
+    }
+    measure(el.clientWidth, el.clientHeight)
+    const observer = new ResizeObserver(([entry]) => measure(entry.contentRect.width, entry.contentRect.height))
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [ref])
+
+  return scale
+}
+
 const MeshGradientBackground = ({ blobs = DEFAULT_BLOBS, className = '' }) => {
   const containerRef = useRef(null)
   const blobRefs = useRef([])
+  const scale = useCardScale(containerRef)
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -71,7 +103,7 @@ const MeshGradientBackground = ({ blobs = DEFAULT_BLOBS, className = '' }) => {
         const { moveY = -46, moveX = 24, duration = 7, delay = 0 } = blobs[i]
 
         gsap.to(blobEl, {
-          y: moveY,
+          y: moveY * scale.y,
           duration,
           delay,
           ease: 'sine.inOut',
@@ -80,7 +112,7 @@ const MeshGradientBackground = ({ blobs = DEFAULT_BLOBS, className = '' }) => {
         })
 
         gsap.to(blobEl, {
-          x: moveX,
+          x: moveX * scale.x,
           duration: duration * 1.35,
           delay: delay + 0.4,
           ease: 'sine.inOut',
@@ -91,7 +123,7 @@ const MeshGradientBackground = ({ blobs = DEFAULT_BLOBS, className = '' }) => {
     }, containerRef)
 
     return () => ctx.revert()
-  }, [blobs])
+  }, [blobs, scale])
 
   return (
     <div
@@ -106,7 +138,7 @@ const MeshGradientBackground = ({ blobs = DEFAULT_BLOBS, className = '' }) => {
       {blobs.map((blob, i) => {
         const hasGlow = Boolean(blob.glowColor)
         const glowStyle = hasGlow
-          ? `0 0 90px 30px ${hexToRgba(blob.glowColor, blob.glowOpacity ?? 0.3)}`
+          ? `0 0 ${90 * scale.size}px ${30 * scale.size}px ${hexToRgba(blob.glowColor, blob.glowOpacity ?? 0.3)}`
           : 'none'
 
         return (
@@ -116,15 +148,15 @@ const MeshGradientBackground = ({ blobs = DEFAULT_BLOBS, className = '' }) => {
             data-hero-light={blob.isLight ? '' : undefined}
             className="absolute rounded-full will-change-transform"
             style={{
-              width: `${blob.size}px`,
-              height: `${blob.size}px`,
+              width: `${blob.size * scale.size}px`,
+              height: `${blob.size * scale.size}px`,
               top: blob.top,
               bottom: blob.bottom,
               left: blob.left,
               right: blob.right,
               transform: 'translate3d(0,0,0)',
               background: `radial-gradient(circle at 50% 50%, ${blob.colorCenter} 0%, ${blob.colorEdge} 65%, transparent 100%)`,
-              filter: `blur(${blob.blur ?? 80}px)`,
+              filter: `blur(${(blob.blur ?? 80) * scale.size}px)`,
               boxShadow: glowStyle,
             }}
           />

@@ -44,8 +44,12 @@ const Hero = () => {
     return () => ctx.revert()
   }, [])
 
+  // O topo do card fica sempre logo abaixo da navbar fixa, em qualquer tela:
+  // `--nav-bottom` (definido pela Navbar) mais o mesmo respiro que a navbar tem
+  // até o topo da janela. O card não é centralizado na vertical (em telas altas
+  // isso abria um vão grande entre a navbar e o card).
   return (
-    <div id="home" data-nav-theme="dark" className="relative isolate flex w-full justify-center items-center min-h-screen px-2.5 py-2.5">
+    <div id="home" data-nav-theme="dark" className="relative isolate flex w-full justify-center items-start px-2.5 pb-2.5 pt-[calc(var(--nav-bottom,64px)+clamp(10px,1.4vw,20px))] sm:min-h-screen">
       {/* Fundo escuro do hero numa peça só: sólido no topo e nas laterais, com
           a base arredondada (elíptica) que transborda para a seção seguinte e
           se dissolve no fundo claro, sem quebras na transição. */}
@@ -54,7 +58,7 @@ const Hero = () => {
         className="bg-abyss-ellipse pointer-events-none absolute inset-x-0 top-0 -z-10 h-[135%]"
       />
 
-      <div ref={cardRef} className="relative isolate @container flex w-full max-w-[1345px] h-[clamp(700px,calc(14.6cqw+641.6px),838px)] rounded-[clamp(16px,3cqw,32px)] justify-start items-center overflow-hidden py-[6cqw] 
+      <div ref={cardRef} className="relative isolate @container flex w-full max-w-[1345px] h-[clamp(440px,130vw,700px)] sm:h-[clamp(700px,calc(14.6cqw+641.6px),838px)] rounded-[clamp(16px,3cqw,32px)] justify-start items-center overflow-hidden py-[6cqw] 
       bg-linear-to-t from-hugeblack-bg from-0% to-blueton-bg to-100% shadow-inner-light">
         <MeshGradientBackground />
 
