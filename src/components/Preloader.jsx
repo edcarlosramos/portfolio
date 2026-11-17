@@ -3,7 +3,7 @@ import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { ScrollSmoother } from 'gsap/ScrollSmoother'
 import { MOTION_OK } from '../constants'
-import { heroReady, markIntroDone } from '../utils/intro'
+import { endLoadingLayout, heroReady, markHeroPrepare, markIntroDone } from '../utils/intro'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -12,6 +12,8 @@ gsap.registerPlugin(ScrollTrigger)
 const MIN_DURATION = 1.6
 // Teto de espera pelo preparo do hero (s): se algo falhar, a tela sai mesmo assim.
 const HERO_TIMEOUT = 4
+// Pausa mínima no "100" antes da saída (s).
+const MIN_HOLD = 0.15
 
 const withTimeout = (promise, seconds) =>
   Promise.race([promise, new Promise((resolve) => setTimeout(resolve, seconds * 1000))])
@@ -28,9 +30,28 @@ const loadSteps = () => [
   document.readyState === 'complete'
     ? Promise.resolve()
     : new Promise((resolve) => window.addEventListener('load', resolve, { once: true })),
-  // Shader e máscara do "Ramos." prontos (trabalho pesado feito escondido).
-  withTimeout(heroReady, HERO_TIMEOUT),
 ]
+
+// Cópia estática da tela, escrita direto no index.html: aparece no primeiro
+// quadro, antes de o JavaScript carregar e o React montar o site inteiro
+// (no celular isso levava mais de 1s de tela preta). O componente abaixo
+// desenha a mesma tela por cima e remove a cópia.
+const removeBootScreen = () => document.getElementById('boot-loader')?.remove()
+
+// Trabalho pesado feito com o contador parado no "100", onde um travamento não
+// aparece: layout das seções escondidas, preparo do WebGL do hero e medidas do
+// ScrollTrigger. Antes isso caía no meio da contagem e travava o número.
+const prepareSite = async (isAlive) => {
+  const hold = new Promise((resolve) => gsap.delayedCall(MIN_HOLD, resolve))
+  await nextPaint() // garante que o "100" já está na tela
+  if (!isAlive()) return
+  endLoadingLayout()
+  markHeroPrepare()
+  await withTimeout(heroReady, HERO_TIMEOUT)
+  if (!isAlive()) return
+  ScrollTrigger.refresh()
+  await Promise.all([hold, nextPaint()])
+}
 
 // Tela de carregamento: contador 0–100 ligado ao carregamento real, uma luz
 // azul que cresce com o progresso e, no fim, a tela sobe em duas camadas
@@ -49,14 +70,19 @@ const Preloader = () => {
   const backRef = useRef(null)
   const countRef = useRef(null)
   const barRef = useRef(null)
+  const shineRef = useRef(null)
   const glowRef = useRef(null)
   const contentRef = useRef(null)
 
   useLayoutEffect(() => {
     if (done) {
+      removeBootScreen()
+      endLoadingLayout()
+      markHeroPrepare()
       markIntroDone()
       return undefined
     }
+    removeBootScreen()
     // No modo de desenvolvimento o React monta os efeitos duas vezes; as
     // promessas da primeira montagem não podem disparar a saída.
     let alive = true
@@ -121,10 +147,10 @@ const Preloader = () => {
       Promise.all([...steps, minTime])
         .then(() => {
           if (!alive) return undefined
-          // Medidas pesadas ainda com a tela cobrindo tudo (antes eram feitas
-          // no último quadro da transição e causavam o travamento no final).
-          ScrollTrigger.refresh()
-          return nextPaint()
+          return chase(100, 0.5).then(() => {
+            shineRef.current?.classList.add('is-active')
+            return prepareSite(() => alive)
+          })
         })
         .then(() => {
           if (!alive) return
@@ -139,11 +165,9 @@ const Preloader = () => {
             },
           })
 
-          tl.to(progress, { value: 100, duration: 0.5, ease: 'power2.inOut', overwrite: true, onUpdate: render })
-            .to({}, { duration: 0.15 })
-            // O contador parou: libera os loops do hero (ex.: WebGL), que
-            // precisam estar vivos quando ele aparecer.
-            .call(markIntroDone)
+          // O contador parou: libera os loops do hero (ex.: WebGL), que
+          // precisam estar vivos quando ele aparecer.
+          tl.call(markIntroDone)
             // Conteúdo da tela sai subindo, em cascata.
             .to(contentRef.current.children, {
               yPercent: -60,
@@ -220,8 +244,16 @@ const Preloader = () => {
             >
               <span ref={countRef}>000</span>
             </p>
-            <div className="mt-[clamp(16px,2vw,28px)] h-px w-full bg-dim-mist/15">
+            <div className="relative mt-[clamp(16px,2vw,28px)] h-px w-full overflow-hidden bg-dim-mist/15">
               <div ref={barRef} className="h-full w-full origin-left bg-dim-turk" />
+              {/* Brilho que corre pela linha enquanto a tela está parada no
+                  100 preparando o site. É animação CSS de `transform`, que roda
+                  na GPU: continua se movendo mesmo com o processador ocupado. */}
+              <div
+                ref={shineRef}
+                aria-hidden="true"
+                className="preloader-shine absolute inset-y-[-1px] left-0 w-1/3 bg-linear-to-r from-transparent via-dim-white to-transparent opacity-0"
+              />
             </div>
             <div className="mt-3 flex justify-between font-sans text-dim-mist/50 text-[clamp(12px,1vw,14px)]">
               <span>Carregando</span>

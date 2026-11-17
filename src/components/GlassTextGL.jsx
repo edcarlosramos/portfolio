@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react'
 import gsap from 'gsap'
 import { MOTION_OK } from '../constants'
-import { introDone, markHeroReady } from '../utils/intro'
+import { heroPrepare, introDone, markHeroReady } from '../utils/intro'
 
 // Texto em liquid glass renderizado em WebGL.
 //
@@ -335,9 +335,10 @@ const GlassTextGL = ({ text, getLight, fallbackClassName = '' }) => {
     // O ResizeObserver não reage a elementos inline: observa o wrapper.
     observer.observe(textEl.parentElement)
 
-    // Primeira construção com a fonte final já carregada, ainda por trás da
-    // tela de carregamento, que espera por este sinal.
-    ;(document.fonts?.ready ?? Promise.resolve()).then(() => {
+    // Primeira construção com a fonte final já carregada e só quando a tela de
+    // carregamento libera (contador parado no 100), para o custo não aparecer
+    // como travada na contagem. A tela espera pelo `markHeroReady`.
+    Promise.all([document.fonts?.ready, heroPrepare]).then(() => {
       if (!alive) return
       const box = textEl.parentElement.getBoundingClientRect()
       lastSize = `${Math.round(box.width)}x${Math.round(box.height)}`

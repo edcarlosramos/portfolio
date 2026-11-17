@@ -6,6 +6,14 @@ import { MOTION_OK } from '../constants'
 
 gsap.registerPlugin(ScrollTrigger, ScrollSmoother)
 
+// Com a tela de carregamento ativa, o ScrollTrigger não se recalcula sozinho
+// no evento `load` da página: isso caía no começo da contagem (~0,3s de
+// travada no celular) e era refeito de qualquer jeito. A tela de carregamento
+// faz o recálculo uma vez, com o contador parado no 100.
+if (window.matchMedia(MOTION_OK).matches) {
+  ScrollTrigger.config({ autoRefreshEvents: 'visibilitychange,DOMContentLoaded,resize' })
+}
+
 // Envolve a página no ScrollSmoother. Elementos `position: fixed` (ex.: Navbar)
 // precisam ficar FORA deste componente.
 const SmoothScroll = ({ children }) => {
@@ -29,7 +37,12 @@ const SmoothScroll = ({ children }) => {
     })
 
     // A fonte web altera a altura do conteúdo quando termina de carregar.
-    document.fonts?.ready.then(() => ScrollTrigger.refresh())
+    // Com movimento ligado quem faz isso é a tela de carregamento, uma vez só
+    // e com o contador parado (aqui seria um segundo refresh, no meio da
+    // contagem, e travava o contador no celular).
+    mm.add('(prefers-reduced-motion: reduce)', () => {
+      document.fonts?.ready.then(() => ScrollTrigger.refresh())
+    })
 
     return () => mm.revert()
   }, [])
