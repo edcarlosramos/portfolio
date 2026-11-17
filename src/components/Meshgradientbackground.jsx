@@ -14,31 +14,32 @@ const DEFAULT_BLOBS = [
     {
     id: 'azul',
     size: 680,
-    right: '15%',
-    bottom: '-65%',
+    right: '25%',
+    bottom: '-58%',
     colorCenter: '#005AAF', 
     colorEdge: '#005AAF',   
     glowColor: '#021F40',   
     glowOpacity: 0.35,      
     blur: 35,              
-    moveY: -105,             
+    moveY: -130,             
     moveX: 500,              
-    duration: 12,          
+    duration: 9,          
     delay: 0,
   },
   {
     id: 'azul',
     size: 600,
-    right: '15%',
-    bottom: '-65%',
+    right: '25%',
+    bottom: '-58%',
     colorCenter: '#7FBBD0', 
     colorEdge: '#A3E6FF',   
     glowColor: '#021F40F',   
+    isLight: true, // luz clara refletida pelo "Ramos." (GlassTextGL)
     glowOpacity: 0.35,      
     blur: 35,               
-    moveY: -105,            
+    moveY: -130,            
     moveX: 500,             
-    duration: 12,          
+    duration: 9,          
     delay: 0,
   },
 
@@ -112,6 +113,7 @@ const MeshGradientBackground = ({ blobs = DEFAULT_BLOBS, className = '' }) => {
           <div
             key={`${blob.id}-${i}`}
             ref={(el) => (blobRefs.current[i] = el)}
+            data-hero-light={blob.isLight ? '' : undefined}
             className="absolute rounded-full will-change-transform"
             style={{
               width: `${blob.size}px`,

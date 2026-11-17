@@ -1,8 +1,9 @@
-import React, { useRef, useEffect } from 'react'
+import React, { useRef, useEffect, useCallback } from 'react'
 import gsap from 'gsap'
 import { ScrambleTextPlugin } from 'gsap/ScrambleTextPlugin'
 import styles from '../styles'
 import MeshGradientBackground from './Meshgradientbackground'
+import GlassTextGL from './GlassTextGL'
 
 gsap.registerPlugin(ScrambleTextPlugin)
 
@@ -15,6 +16,8 @@ const ROLES = [
 
 const Hero = () => {
   const roleRef = useRef(null)
+  const cardRef = useRef(null)
+  const getLight = useCallback(() => cardRef.current?.querySelector('[data-hero-light]'), [])
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -51,7 +54,7 @@ const Hero = () => {
         className="bg-abyss-ellipse pointer-events-none absolute inset-x-0 top-0 -z-10 h-[135%]"
       />
 
-      <div className="relative isolate @container flex w-full max-w-[1345px] h-[clamp(700px,calc(14.6cqw+641.6px),838px)] rounded-[clamp(16px,3cqw,32px)] justify-start items-center overflow-hidden py-[6cqw] 
+      <div ref={cardRef} className="relative isolate @container flex w-full max-w-[1345px] h-[clamp(700px,calc(14.6cqw+641.6px),838px)] rounded-[clamp(16px,3cqw,32px)] justify-start items-center overflow-hidden py-[6cqw] 
       bg-linear-to-t from-hugeblack-bg from-0% to-blueton-bg to-100% shadow-inner-light">
         <MeshGradientBackground />
 
@@ -75,11 +78,15 @@ const Hero = () => {
               </div>
 
             </div>
-            <div className ="opacity-18">            
-              <h1 className="[text-shadow:1px_1px_0_rgba(255,255,255,1)] font-sans font-semibold tracking-[-0.02em] leading-[0.75] text-fake-transparent/95 text-[clamp(32px,22.3cqw,300px)] pr-[3cqw] h-fit whitespace-nowrap drop-shadow-[3px_4px_8px_rgba(255,255,255,0.14)] ">
-              Ramos.
+            {/* "Ramos." em liquid glass (WebGL), refletindo a luz clara do fundo.
+                Sem WebGL, volta ao estilo anterior (fallbackClassName). */}
+            <h1 className="font-sans font-semibold tracking-[-0.02em] leading-[0.75] text-[clamp(32px,22.3cqw,300px)] pr-[3cqw] h-fit whitespace-nowrap">
+              <GlassTextGL
+                text="Ramos."
+                getLight={getLight}
+                fallbackClassName="opacity-18 [text-shadow:1px_1px_0_rgba(255,255,255,1)] text-fake-transparent/95 drop-shadow-[3px_4px_8px_rgba(255,255,255,0.14)]"
+              />
             </h1>
-            </div>
           </div>
         </div>
       </div>
