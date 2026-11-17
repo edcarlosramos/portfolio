@@ -192,11 +192,15 @@ const Projects = () => {
         <SectionHeader title="Projetos" linkLabel="mais" />
       </div>
 
+      {/* O trilho rola na horizontal, e `overflow-x: auto` também corta o que
+          passa em cima e embaixo: o fundo precisa de espaço para a sombra
+          inteira do card (~28px), senão ela termina numa linha dura. A margem
+          negativa devolve esse espaço extra, mantendo o espaçamento da seção. */}
       <ul
         ref={trackRef}
         tabIndex={0}
         aria-label="Lista de projetos"
-        className={`${styles.focusRing} no-scrollbar mt-[clamp(8px,1.6vw,24px)] flex justify-center-safe gap-[clamp(16px,4.4vw,64px)] overflow-x-auto cursor-grab select-none data-dragging:cursor-grabbing px-[clamp(20px,7vw,100px)] py-[clamp(16px,2vw,32px)]`}
+        className={`${styles.focusRing} no-scrollbar mt-[clamp(8px,1.6vw,24px)] flex justify-center-safe gap-[clamp(16px,4.4vw,64px)] overflow-x-auto cursor-grab select-none data-dragging:cursor-grabbing px-[clamp(20px,7vw,100px)] pt-[clamp(16px,2vw,32px)] pb-10 -mb-[calc(40px-clamp(16px,2vw,32px))]`}
       >
         {projects.map((project) => (
           <li
