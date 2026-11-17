@@ -87,7 +87,7 @@ void main() {
   vec2 n2 = n.xy / max(length(n.xy), 1e-4);
 
   // Refração com aberração cromática (lente convexa: amplia o fundo).
-  vec2 off = n.xy * uFs * 0.28;
+  vec2 off = n.xy * uFs * 0.1;
   vec3 col;
   col.r = background(p - off * 1.00).r;
   col.g = background(p - off * 1.06).g;
@@ -119,14 +119,14 @@ void main() {
 
   // Corpo do vidro: leve tom claro, mais forte no alto (luz ambiente).
   float vertical = 1.0 - clamp(p.y / uRes.y, 0.0, 1.0);
-  col += vec3(0.02, 0.04, 0.07) + vec3(0.25, 0.4, 0.55) * vertical * 0.06;
+  col += vec3(0.035, 0.065, 0.1) + vec3(0.25, 0.4, 0.55) * vertical * 0.06;
 
   // Brilhos somados à parte e comprimidos no fim (glow / (1 + glow)), para
   // ficarem suaves e translúcidos em vez de estourar em branco.
   vec3 glow = vec3(0.0);
   glow += uLightEdge * spec * att * (0.55 + 0.35 * speed);
-  glow += uLightEdge * fres * facing * (0.25 + 0.5 * att);
-  glow += uLightEdge * max(dot(n2, -l2), 0.0) * fres * att * 0.15;
+  glow += uLightEdge * fres * facing * (0.08 + 0.25 * att);
+  glow += uLightEdge * max(dot(n2, -l2), 0.0) * fres * att * 0.06;
   col += glow / (1.0 + glow);
 
   gl_FragColor = vec4(col * alpha, alpha);
