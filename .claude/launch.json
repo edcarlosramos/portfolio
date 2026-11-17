@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "portfolio-pages-preview",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["vite", "preview", "--mode", "pages", "--port", "4180"],
+      "port": 4180
+    }
+  ]
+}
