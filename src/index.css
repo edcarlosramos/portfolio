@@ -35,6 +35,24 @@
 
 /* Fundo escuro do hero: elipse ancorada no topo, mais larga que a tela, que
    mantém topo e laterais sólidos e arredonda a base até o fundo claro. */
+/* Fade do rodapé: do fundo claro ao azul e ao escuro com paradas
+   intermediárias em curva suave (ease-in-out), sem a "faixa" de transição
+   brusca que um degradê de 3 cores cria. */
+@utility bg-footer-fade {
+  background: linear-gradient(to bottom,
+    var(--color-hugewhite-bg) 0%,
+    color-mix(in oklab, var(--color-hugewhite-bg) 94%, var(--color-blueton-bg)) 8%,
+    color-mix(in oklab, var(--color-hugewhite-bg) 82%, var(--color-blueton-bg)) 16%,
+    color-mix(in oklab, var(--color-hugewhite-bg) 64%, var(--color-blueton-bg)) 25%,
+    color-mix(in oklab, var(--color-hugewhite-bg) 42%, var(--color-blueton-bg)) 34%,
+    color-mix(in oklab, var(--color-hugewhite-bg) 22%, var(--color-blueton-bg)) 43%,
+    color-mix(in oklab, var(--color-hugewhite-bg) 8%, var(--color-blueton-bg)) 52%,
+    var(--color-blueton-bg) 60%,
+    color-mix(in oklab, var(--color-blueton-bg) 70%, var(--color-hugeblack-bg)) 72%,
+    color-mix(in oklab, var(--color-blueton-bg) 35%, var(--color-hugeblack-bg)) 86%,
+    var(--color-hugeblack-bg) 100%);
+}
+
 @utility bg-abyss-ellipse {
   background: radial-gradient(
     130% 100% at 50% 0%,

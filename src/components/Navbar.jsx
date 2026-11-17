@@ -197,14 +197,14 @@ const Navbar = () => {
     >
       <ul
         ref={listRef}
-        className={`relative flex items-center gap-[clamp(6px,1.1vw,15px)] rounded-[12px] p-[6px] transition-colors duration-500 ${theme.list}`}
+        className={`relative flex items-center gap-[4px] rounded-[10px] p-[4px] sm:gap-[clamp(6px,1.1vw,15px)] sm:rounded-[12px] sm:p-[6px] transition-colors duration-500 ${theme.list}`}
       >
         {navLinks.map((link) => (
           <li key={link.id}>
             <a
               href={`#${link.id}`}
               onClick={(event) => handleClick(event, link.id)}
-              className={`${styles.focusRing} inline-flex items-center rounded-[9px] px-[13px] py-[7px] font-sans font-semibold tracking-[-0.02em] leading-[24px] text-dim-white text-[clamp(14px,1.35vw,18px)] whitespace-nowrap shadow-nav-pill transition-colors duration-500 ${theme.pill}`}
+              className={`${styles.focusRing} inline-flex items-center rounded-[7px] px-[8px] py-[4px] font-sans font-semibold tracking-[-0.02em] leading-[22px] text-dim-white text-[13px] sm:rounded-[9px] sm:px-[13px] sm:py-[7px] sm:leading-[24px] sm:text-[clamp(14px,1.35vw,18px)] whitespace-nowrap shadow-nav-pill transition-colors duration-500 ${theme.pill}`}
             >
               {link.title}
             </a>
@@ -216,7 +216,7 @@ const Navbar = () => {
       <span
         ref={iconRef}
         aria-hidden="true"
-        className={`pointer-events-none invisible absolute inset-y-[6px] right-[6px] flex aspect-square flex-col items-center justify-center gap-[4px] rounded-[9px] shadow-nav-pill transition-colors duration-500 ${theme.pill}`}
+        className={`pointer-events-none invisible absolute inset-y-[4px] right-[4px] flex aspect-square flex-col items-center justify-center gap-[4px] rounded-[7px] sm:inset-y-[6px] sm:right-[6px] sm:rounded-[9px] shadow-nav-pill transition-colors duration-500 ${theme.pill}`}
       >
         <span className="h-[2px] w-[16px] rounded-full bg-dim-white" />
         <span className="h-[2px] w-[16px] rounded-full bg-dim-white" />

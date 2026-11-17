@@ -39,7 +39,7 @@ const Footer = () => {
   return (
     <footer
       ref={footerRef}
-      className="relative -mt-px overflow-hidden bg-linear-to-b from-hugewhite-bg via-blueton-bg via-45% to-hugeblack-bg pt-[clamp(56px,9vw,130px)]"
+      className="relative -mt-px overflow-hidden bg-footer-fade pt-[clamp(80px,12vw,180px)]"
     >
       <p
         ref={titleRef}
