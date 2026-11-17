@@ -107,10 +107,14 @@ const Preloader = () => {
       if (heroCard) gsap.set(heroCard, { y: 120, scale: 0.94, willChange: 'transform' })
       if (nav) gsap.set(nav, { y: -24, opacity: 0, willChange: 'transform, opacity' })
 
-      // Setters rápidos: sem criar um tween por quadro.
-      const setBar = gsap.quickSetter(barRef.current, 'scaleX')
-      const setGlowScale = gsap.quickSetter(glowRef.current, 'scale')
-      const setGlowAlpha = gsap.quickSetter(glowRef.current, 'opacity')
+      // Escrita direta no estilo: sem criar um tween por quadro. (Antes era
+      // `gsap.quickSetter`, que no Safari do iPhone caía num `setAttribute`
+      // que quebrava e o site não abria.)
+      const barStyle = barRef.current.style
+      const glowStyle = glowRef.current.style
+      const setBar = (v) => { barStyle.transform = `scaleX(${v})` }
+      const setGlowScale = (v) => { glowStyle.transform = `scale(${v})` }
+      const setGlowAlpha = (v) => { glowStyle.opacity = v }
 
       const progress = { value: 0 }
       let shown = -1
