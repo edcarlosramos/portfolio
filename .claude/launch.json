@@ -6,6 +6,12 @@
       "runtimeExecutable": "npx",
       "runtimeArgs": ["vite", "preview", "--mode", "pages", "--port", "4180"],
       "port": 4180
+    },
+    {
+      "name": "portfolio-dev",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["vite", "--port", "5183", "--strictPort"],
+      "port": 5183
     }
   ]
 }

@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react'
 import gsap from 'gsap'
 import { MOTION_OK } from '../constants'
+import { introDone, markHeroReady } from '../utils/intro'
 
 // Texto em liquid glass renderizado em WebGL.
 //
@@ -180,6 +181,7 @@ const GlassTextGL = ({ text, getLight, fallbackClassName = '' }) => {
     const gl = canvas.getContext('webgl', { premultipliedAlpha: true, antialias: false })
     if (!gl) {
       setSupported(false)
+      markHeroReady()
       return undefined
     }
 
@@ -189,6 +191,7 @@ const GlassTextGL = ({ text, getLight, fallbackClassName = '' }) => {
     } catch (error) {
       console.error(error)
       setSupported(false)
+      markHeroReady()
       return undefined
     }
 
@@ -317,10 +320,30 @@ const GlassTextGL = ({ text, getLight, fallbackClassName = '' }) => {
       render()
     }
 
-    const observer = new ResizeObserver(rebuild)
+    let alive = true
+    // O ResizeObserver só reconstrói quando o tamanho de fato muda: ele dispara
+    // logo ao observar, e a reconstrução (3 canvases desfocados + leitura de
+    // pixels) é o passo mais caro do hero.
+    let lastSize = ''
+    const observer = new ResizeObserver(([entry]) => {
+      const { width, height } = entry.contentRect
+      const size = `${Math.round(width)}x${Math.round(height)}`
+      if (size === lastSize || !layout.ready) return
+      lastSize = size
+      rebuild()
+    })
     // O ResizeObserver não reage a elementos inline: observa o wrapper.
     observer.observe(textEl.parentElement)
-    document.fonts?.ready.then(rebuild)
+
+    // Primeira construção com a fonte final já carregada, ainda por trás da
+    // tela de carregamento, que espera por este sinal.
+    ;(document.fonts?.ready ?? Promise.resolve()).then(() => {
+      if (!alive) return
+      const box = textEl.parentElement.getBoundingClientRect()
+      lastSize = `${Math.round(box.width)}x${Math.round(box.height)}`
+      rebuild()
+      markHeroReady()
+    })
 
     // Só renderiza com o texto na tela.
     const io = new IntersectionObserver(([entry]) => {
@@ -328,14 +351,20 @@ const GlassTextGL = ({ text, getLight, fallbackClassName = '' }) => {
     })
     io.observe(canvas)
 
+    // O loop por quadro (que lê posições do DOM) só começa depois da tela de
+    // carregamento; antes disso ele só competiria com a animação dela.
     const mm = gsap.matchMedia()
     const tick = () => render(gsap.ticker.deltaRatio(60))
-    mm.add(MOTION_OK, () => {
-      gsap.ticker.add(tick)
-      return () => gsap.ticker.remove(tick)
+    introDone.then(() => {
+      if (!alive) return
+      mm.add(MOTION_OK, () => {
+        gsap.ticker.add(tick)
+        return () => gsap.ticker.remove(tick)
+      })
     })
 
     return () => {
+      alive = false
       observer.disconnect()
       io.disconnect()
       mm.revert()
