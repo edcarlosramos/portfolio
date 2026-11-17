@@ -99,6 +99,9 @@ const MeshGradientBackground = ({ blobs = DEFAULT_BLOBS, className = '' }) => {
 
   useEffect(() => {
     let alive = true
+    let started = false
+    let visible = true
+    let observer
     const ctx = gsap.context(() => {
       const tweens = []
       blobRefs.current.forEach((blobEl, i) => {
@@ -131,13 +134,29 @@ const MeshGradientBackground = ({ blobs = DEFAULT_BLOBS, className = '' }) => {
       tweens.forEach((t) => t.timeScale(0).pause())
       introEnd.then(() => {
         if (!alive) return
+        started = true
+        if (!visible) return
         tweens.forEach((t) => t.resume())
         gsap.to(tweens, { timeScale: 1, duration: 1.2, ease: 'power1.in' })
       })
+
+      // Fora da tela (ex.: rolando por outras seções) os blobs ficam parados:
+      // sem isso o GSAP mexia neles a cada quadro e a GPU refazia o desfoque de
+      // algo que ninguém está vendo. Voltam de onde pararam ao reaparecer.
+      observer = new IntersectionObserver(([entry]) => {
+        visible = entry.isIntersecting
+        if (!started) return
+        tweens.forEach((t) => {
+          if (visible) t.timeScale(1).resume()
+          else t.pause()
+        })
+      })
+      observer.observe(containerRef.current)
     }, containerRef)
 
     return () => {
       alive = false
+      observer?.disconnect()
       ctx.revert()
     }
   }, [blobs, scale])
