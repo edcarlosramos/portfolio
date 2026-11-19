@@ -1,6 +1,11 @@
 import React, { useRef, useEffect, useLayoutEffect, useState } from 'react'
 import gsap from 'gsap'
-import { introEnd } from '../utils/intro'
+import { introDone } from '../utils/intro'
+
+// Quanto depois do início da revelação de entrada os blobs começam a se mover
+// (s). A revelação leva ~1,75s; aos 0,9s o card já está quase parado, então o
+// desfoque em movimento não pesa na parte rápida da entrada.
+const START_AFTER_INTRO = 0.9
 
 const hexToRgba = (hex, alpha = 1) => {
   if (!hex) return 'transparent'
@@ -16,7 +21,7 @@ const DEFAULT_BLOBS = [
     id: 'azul',
     size: 680,
     right: '25%',
-    bottom: '-58%',
+    bottom: '-50%',
     colorCenter: '#005AAF', 
     colorEdge: '#005AAF',   
     glowColor: '#021F40',   
@@ -31,7 +36,7 @@ const DEFAULT_BLOBS = [
     id: 'azul',
     size: 600,
     right: '25%',
-    bottom: '-58%',
+    bottom: '-50%',
     colorCenter: '#7FBBD0', 
     colorEdge: '#A3E6FF',   
     glowColor: '#021F40F',   
@@ -102,6 +107,7 @@ const MeshGradientBackground = ({ blobs = DEFAULT_BLOBS, className = '' }) => {
     let started = false
     let visible = true
     let observer
+    let startCall
     const ctx = gsap.context(() => {
       const tweens = []
       blobRefs.current.forEach((blobEl, i) => {
@@ -127,17 +133,20 @@ const MeshGradientBackground = ({ blobs = DEFAULT_BLOBS, className = '' }) => {
         }))
       })
 
-      // Parados até a tela de carregamento terminar de sair: blobs com blur se
-      // movendo durante a revelação obrigavam a GPU a refazer o desfoque a
-      // cada quadro, e era isso que travava a transição no celular. Depois,
-      // aceleram suavemente até a velocidade normal.
+      // Parados no começo da revelação de entrada: blobs com blur se movendo
+      // enquanto o card sobe obrigavam a GPU a refazer o desfoque a cada
+      // quadro, e era isso que travava a transição no celular. Começam pouco
+      // antes do fim dela e aceleram suavemente até a velocidade normal.
       tweens.forEach((t) => t.timeScale(0).pause())
-      introEnd.then(() => {
+      introDone.then(() => {
         if (!alive) return
-        started = true
-        if (!visible) return
-        tweens.forEach((t) => t.resume())
-        gsap.to(tweens, { timeScale: 1, duration: 1.2, ease: 'power1.in' })
+        startCall = gsap.delayedCall(START_AFTER_INTRO, () => {
+          if (!alive) return
+          started = true
+          if (!visible) return
+          tweens.forEach((t) => t.resume())
+          gsap.to(tweens, { timeScale: 1, duration: 1.2, ease: 'power1.in' })
+        })
       })
 
       // Fora da tela (ex.: rolando por outras seções) os blobs ficam parados:
@@ -156,6 +165,7 @@ const MeshGradientBackground = ({ blobs = DEFAULT_BLOBS, className = '' }) => {
 
     return () => {
       alive = false
+      startCall?.kill()
       observer?.disconnect()
       ctx.revert()
     }

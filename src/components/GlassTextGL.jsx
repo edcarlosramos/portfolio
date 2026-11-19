@@ -159,6 +159,23 @@ const createProgram = (gl) => {
   return program
 }
 
+// Posição de `el` dentro de `ancestor` em coordenadas de layout (soma dos
+// offsets), ignorando transforms. Na entrada da página o card e os itens do
+// hero estão deslocados e reduzidos (PageIntro.jsx); medindo com
+// getBoundingClientRect a máscara e a luz saíam calculadas nesse estado
+// provisório e os brilhos apareciam no lugar errado até o loop começar.
+const offsetWithin = (el, ancestor) => {
+  let x = 0
+  let y = 0
+  let node = el
+  while (node && node !== ancestor) {
+    x += node.offsetLeft
+    y += node.offsetTop
+    node = node.offsetParent
+  }
+  return { x, y }
+}
+
 // Alfa de um canvas 2D com o texto, opcionalmente desfocado.
 const drawAlpha = (source, width, height, blur) => {
   const canvas = document.createElement('canvas')
@@ -233,14 +250,20 @@ const GlassTextGL = ({ text, getLight, fallbackClassName = '' }) => {
       const fontSize = parseFloat(style.fontSize)
       const dpr = Math.min(window.devicePixelRatio || 1, MAX_DPR)
       const pad = fontSize * PAD_EM
-      const box = textEl.getBoundingClientRect()
+      // Medidas de layout (sem transforms), relativas ao wrapper posicionado.
+      const box = {
+        left: textEl.offsetLeft,
+        top: textEl.offsetTop,
+        width: textEl.offsetWidth,
+        height: textEl.offsetHeight,
+      }
       if (!box.width) return
 
       // Linha de base do texto, medida no próprio DOM.
       const probe = document.createElement('span')
       probe.style.cssText = 'display:inline-block;width:0;height:0;vertical-align:baseline'
       textEl.appendChild(probe)
-      const baseline = probe.getBoundingClientRect().top - box.top
+      const baseline = probe.offsetTop - box.top
       probe.remove()
 
       const cssWidth = box.width + pad * 2
@@ -248,9 +271,8 @@ const GlassTextGL = ({ text, getLight, fallbackClassName = '' }) => {
       // O canvas é posicionado em relação ao wrapper, mas a máscara é desenhada
       // a partir da caixa do texto inline (que, com leading < 1, começa acima
       // do wrapper): alinha os dois para o vidro cobrir o texto real.
-      const wrapperBox = textEl.parentElement.getBoundingClientRect()
-      canvas.style.left = `${box.left - wrapperBox.left - pad}px`
-      canvas.style.top = `${box.top - wrapperBox.top - pad}px`
+      canvas.style.left = `${box.left - pad}px`
+      canvas.style.top = `${box.top - pad}px`
       canvas.style.width = `${cssWidth}px`
       canvas.style.height = `${cssHeight}px`
       const width = Math.round(cssWidth * dpr)
@@ -292,13 +314,18 @@ const GlassTextGL = ({ text, getLight, fallbackClassName = '' }) => {
       const light = getLight()
       if (!layout.ready || !light || !visible) return
 
+      // Tudo em coordenadas de layout dentro do card: só o movimento da
+      // própria luz (o transform dela, do GSAP) entra na conta; deslocamentos
+      // e escalas do card ou do texto (entrada, rolagem) não distorcem o vidro.
       const { dpr } = layout
-      const canvasBox = canvas.getBoundingClientRect()
-      const lightBox = light.getBoundingClientRect()
-      const cardBox = light.parentElement.getBoundingClientRect()
+      const card = light.parentElement.offsetParent
+      const canvasPos = offsetWithin(canvas, card)
+      const lightPos = offsetWithin(light, card)
+      const lightX = lightPos.x + Number(gsap.getProperty(light, 'x')) + light.offsetWidth / 2
+      const lightY = lightPos.y + Number(gsap.getProperty(light, 'y')) + light.offsetHeight / 2
 
-      const x = (lightBox.left + lightBox.width / 2 - canvasBox.left) * dpr
-      const y = (lightBox.top + lightBox.height / 2 - canvasBox.top) * dpr
+      const x = (lightX - canvasPos.x) * dpr
+      const y = (lightY - canvasPos.y) * dpr
       if (!motion.ready) Object.assign(motion, { ready: true, x, y })
       const k = Math.min(1, 0.1 * ratio)
       motion.vx += ((x - motion.x) / ratio - motion.vx) * k
@@ -310,8 +337,8 @@ const GlassTextGL = ({ text, getLight, fallbackClassName = '' }) => {
       gl.uniform1f(u.uLightR, (light.offsetWidth / 2) * dpr)
       gl.uniform1f(u.uBlur, 35 * dpr)
       gl.uniform2f(u.uVel, motion.vx / dpr, motion.vy / dpr)
-      gl.uniform1f(u.uCardTop, (cardBox.top - canvasBox.top) * dpr)
-      gl.uniform1f(u.uCardH, cardBox.height * dpr)
+      gl.uniform1f(u.uCardTop, -canvasPos.y * dpr)
+      gl.uniform1f(u.uCardH, card.offsetHeight * dpr)
       gl.drawArrays(gl.TRIANGLES, 0, 3)
     }
 
@@ -335,9 +362,9 @@ const GlassTextGL = ({ text, getLight, fallbackClassName = '' }) => {
     // O ResizeObserver não reage a elementos inline: observa o wrapper.
     observer.observe(textEl.parentElement)
 
-    // Primeira construção com a fonte final já carregada e só quando a tela de
-    // carregamento libera (contador parado no 100), para o custo não aparecer
-    // como travada na contagem. A tela espera pelo `markHeroReady`.
+    // Primeira construção com a fonte final já carregada. A revelação de
+    // entrada (PageIntro.jsx) espera pelo `markHeroReady` antes de animar,
+    // para o custo não cair no meio do movimento.
     Promise.all([document.fonts?.ready, heroPrepare]).then(() => {
       if (!alive) return
       const box = textEl.parentElement.getBoundingClientRect()
@@ -346,10 +373,9 @@ const GlassTextGL = ({ text, getLight, fallbackClassName = '' }) => {
       markHeroReady()
     })
 
-    // Só renderiza com o texto na tela. Ao (re)aparecer, desenha na hora: com
-    // a tela de carregamento o hero começa fora do layout (o observador o dá
-    // como invisível), e sem isso o "Ramos." só surgiria quando o loop por
-    // quadro começasse, depois da revelação.
+    // Só renderiza com o texto na tela. Ao (re)aparecer, desenha na hora: sem
+    // isso o "Ramos." só surgiria quando o loop por quadro começasse, depois
+    // da revelação.
     const io = new IntersectionObserver(([entry]) => {
       visible = entry.isIntersecting
       if (visible) render()
@@ -357,7 +383,7 @@ const GlassTextGL = ({ text, getLight, fallbackClassName = '' }) => {
     io.observe(canvas)
 
     // O loop por quadro (shader pesado + leitura de posições do DOM) só começa
-    // quando a tela de carregamento terminou de sair. Durante a revelação o
+    // quando a revelação de entrada terminou. Durante ela o
     // canvas se move junto com o card, então a imagem já desenhada continua
     // certa, e a GPU fica livre para a transição.
     const mm = gsap.matchMedia()

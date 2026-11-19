@@ -11,12 +11,6 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,wght@6..144,1..1000&display=swap" />
     <title>Edcarlos Ramos — Portfólio</title>
     <script>
-      // Tela de carregamento ativa (mesma condição do Preloader): esconde o
-      // layout das seções abaixo do hero até o contador chegar a 100.
-      if (window.matchMedia('(prefers-reduced-motion: no-preference)').matches) {
-        document.documentElement.classList.add('is-loading')
-      }
-
       // Rede de segurança: se o site não iniciar (script que não baixou,
       // navegador sem suporte, erro que derruba o React), em vez de ficar preso
       // numa tela preta ou no "Carregando" mostra um aviso com o motivo.
@@ -36,9 +30,6 @@
           if (shown) return
           shown = true
           var show = function () {
-            document.documentElement.classList.remove('is-loading')
-            var boot = document.getElementById('boot-loader')
-            if (boot) boot.remove()
             var box = document.createElement('div')
             box.setAttribute('role', 'alert')
             box.style.cssText = 'position:fixed;inset:0;z-index:2147483647;display:flex;flex-direction:column;justify-content:center;gap:16px;padding:24px;background:#000c17;color:#e5ebf1;font:16px/1.5 system-ui,sans-serif'
@@ -76,33 +67,12 @@
       })()
     </script>
     <style>
-      /* Cópia estática da tela de carregamento (src/components/Preloader.jsx):
-         aparece no primeiro quadro, antes do JavaScript. O React desenha a
-         mesma tela por cima e remove esta. Manter os dois iguais. */
+      /* Fundo escuro do hero já no primeiro quadro, antes do CSS e do JS. */
       html { background: #000c17; }
       body { margin: 0; }
-      html:not(.is-loading) #boot-loader { display: none; }
-      #boot-loader { position: fixed; inset: 0; z-index: 100; overflow: hidden; background: #000c17; font-family: "Google Sans Flex", sans-serif; line-height: 1.5; }
-      #boot-loader .bl-glow { position: absolute; left: calc(50% - min(70vw, 700px)); top: calc(100% - min(70vw, 700px)); width: min(140vw, 1400px); height: min(140vw, 1400px); border-radius: 50%; transform: scale(0.2); opacity: 0.25; background: radial-gradient(circle, #4c9be4 0%, color-mix(in oklab, #00417b 85%, transparent) 38%, color-mix(in oklab, #00417b 30%, transparent) 55%, transparent 70%); }
-      #boot-loader .bl-content { position: relative; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; height: 100%; padding: clamp(20px, 4vw, 56px) clamp(20px, 5vw, 72px); }
-      #boot-loader .bl-title { margin: 0; font-weight: 500; letter-spacing: -0.01em; color: rgb(229 235 241 / 0.7); font-size: clamp(14px, 1.3vw, 18px); }
-      #boot-loader .bl-count { margin: 0; font-weight: 600; letter-spacing: -0.04em; line-height: 0.8; font-variant-numeric: tabular-nums; font-size: clamp(96px, 22vw, 320px); background: linear-gradient(to bottom, #fff 28%, #c3f2ff 81%); -webkit-background-clip: text; background-clip: text; color: transparent; }
-      #boot-loader .bl-bar { margin-top: clamp(16px, 2vw, 28px); height: 1px; background: rgb(229 235 241 / 0.15); }
-      #boot-loader .bl-labels { margin-top: 12px; display: flex; justify-content: space-between; color: rgb(229 235 241 / 0.5); font-size: clamp(12px, 1vw, 14px); }
     </style>
   </head>
   <body>
-    <div id="boot-loader" aria-hidden="true">
-      <div class="bl-glow"></div>
-      <div class="bl-content">
-        <p class="bl-title">Edcarlos Ramos — Portfólio</p>
-        <div>
-          <p class="bl-count">000</p>
-          <div class="bl-bar"></div>
-          <div class="bl-labels"><span>Carregando</span><span>Analista de dados · Dev · Product Manager</span></div>
-        </div>
-      </div>
-    </div>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

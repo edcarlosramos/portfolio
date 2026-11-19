@@ -6,10 +6,9 @@ import { MOTION_OK } from '../constants'
 
 gsap.registerPlugin(ScrollTrigger, ScrollSmoother)
 
-// Com a tela de carregamento ativa, o ScrollTrigger não se recalcula sozinho
-// no evento `load` da página: isso caía no começo da contagem (~0,3s de
-// travada no celular) e era refeito de qualquer jeito. A tela de carregamento
-// faz o recálculo uma vez, com o contador parado no 100.
+// O ScrollTrigger não se recalcula sozinho no evento `load` da página: isso
+// podia cair no meio da revelação de entrada (~0,3s de travada no celular).
+// A revelação (PageIntro.jsx) faz o recálculo uma vez, antes de começar.
 if (window.matchMedia(MOTION_OK).matches) {
   ScrollTrigger.config({ autoRefreshEvents: 'visibilitychange,DOMContentLoaded,resize' })
 }
@@ -37,9 +36,8 @@ const SmoothScroll = ({ children }) => {
     })
 
     // A fonte web altera a altura do conteúdo quando termina de carregar.
-    // Com movimento ligado quem faz isso é a tela de carregamento, uma vez só
-    // e com o contador parado (aqui seria um segundo refresh, no meio da
-    // contagem, e travava o contador no celular).
+    // Com movimento ligado quem recalcula é a revelação de entrada, uma vez
+    // só e antes de animar.
     mm.add('(prefers-reduced-motion: reduce)', () => {
       document.fonts?.ready.then(() => ScrollTrigger.refresh())
     })

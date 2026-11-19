@@ -63,13 +63,13 @@ const Hero = () => {
         <MeshGradientBackground />
 
         <div className="relative z-10 flex flex-col w-full pl-[1cqw]">
-          <h1 className={`${styles.fadetitle} font-sans font-semibold tracking-[-0.02em] leading-[0.75] text-[clamp(32px,22.3cqw,300px)] pr-[3cqw] h-fit whitespace-nowrap`}>
+          <h1 data-hero-item className={`${styles.fadetitle} font-sans font-semibold tracking-[-0.02em] leading-[0.75] text-[clamp(32px,22.3cqw,300px)] pr-[3cqw] h-fit whitespace-nowrap`}>
             Edcarlos
           </h1>
 
           <div className="flex flex-col-reverse sm:flex-row items-start sm:items-center ml- sm:ml-[clamp(6px,1.5cqw,15px)] gap-[clamp(10px,2.5cqw,12px)] sm:gap-0 mt-[2cqw] sm:mt-3">
             
-            <div className="w-[clamp(230px,28cqw,440px)] shrink-0 h-fit flex justify-start items-center self-start">
+            <div data-hero-item className="w-[clamp(230px,28cqw,440px)] shrink-0 h-fit flex justify-start items-center self-start">
               
               
               <div className="inline-flex items-center h-fit rounded-[clamp(14px,3cqw,24px)] p-[clamp(10px,2.2cqw,14px)] bg-linear-to-r from-dim-bluestrong/25 from-0% to-dim-turk/25 to-100% backdrop-blur-3xl shadow-inner-lightcard drop-shadow-[3px_4px_5px_rgba(255,255,255,0.15)] transition-all duration-300">
@@ -84,7 +84,7 @@ const Hero = () => {
             </div>
             {/* "Ramos." em liquid glass (WebGL), refletindo a luz clara do fundo.
                 Sem WebGL, volta ao estilo anterior (fallbackClassName). */}
-            <h1 className="font-sans font-semibold tracking-[-0.02em] leading-[0.75] text-[clamp(32px,22.3cqw,300px)] pr-[3cqw] h-fit whitespace-nowrap">
+            <h1 data-hero-item className="font-sans font-semibold tracking-[-0.02em] leading-[0.75] text-[clamp(32px,22.3cqw,300px)] pr-[3cqw] h-fit whitespace-nowrap">
               <GlassTextGL
                 text="Ramos."
                 getLight={getLight}
